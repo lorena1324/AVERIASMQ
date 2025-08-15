@@ -1,3 +1,4 @@
+// script.js
 // ====== CONFIG ======
 const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbw2J76HmM9sT9i-IH4IVPgzw782oUM9lP5q4KM_0_0oyryhhjIrX0T-KK2H6vHOQtob/exec";
@@ -66,6 +67,23 @@ function loadDraft() {
     }
   } catch (e) {
     console.warn("No se pudo cargar borrador:", e);
+  }
+}
+
+// ===== Overlay loading =====
+function showLoading(on = true) {
+  const ov = document.getElementById("loadingOverlay");
+  if (!ov) return;
+  ov.classList.toggle("hidden", !on);
+
+  // feedback del UI
+  document.body.style.cursor = on ? "wait" : "";
+  if (on) {
+    document.body.dataset.pe = document.body.style.pointerEvents || "";
+    document.body.style.pointerEvents = "none";
+  } else {
+    document.body.style.pointerEvents = document.body.dataset.pe || "";
+    delete document.body.dataset.pe;
   }
 }
 
@@ -246,7 +264,6 @@ $("#btnAdd").addEventListener("click", () => {
 
   renderRegistros();
   sumTotal();
-  // saveDraft();
 
   $("#itemForm").reset();
   $("#descripcion").value = "";
@@ -365,11 +382,16 @@ async function subirFotoIndividual(foto) {
   }
 }
 
-// ====== SUBMIT ======
-$("#btnEnviar").addEventListener("click", async () => {
+// ====== SUBMIT (con overlay de carga) ======
+document.getElementById("btnEnviar").addEventListener("click", async () => {
+  // Mostrar overlay desde el inicio
+  showLoading(true);
+
   try {
-    if (registros.length === 0)
+    if (registros.length === 0) {
+      showLoading(false);
       return toast("Agrega al menos un registro de avería.");
+    }
 
     const fechaHora = $("#fechaHora").value;
     const turno = $("#turno").value;
@@ -381,23 +403,21 @@ $("#btnEnviar").addEventListener("click", async () => {
     if (!turno) faltan.push("Turno");
     if (!operador) faltan.push("Operador MQ");
     if (!funcionario) faltan.push("Funcionario");
-    if (faltan.length)
-      return toast(
-        "Completa los datos del encabezado:\n- " + faltan.join("\n- ")
-      );
+    if (faltan.length) {
+      showLoading(false);
+      return toast("Completa los datos del encabezado:\n- " + faltan.join("\n- "));
+    }
 
+    // Log de tamaños en consola (sin alert modal)
     const sizes = fotosMem.map((t, i) => ({
       i: i + 1,
       f1: (t.f1.size / 1024).toFixed(0) + " KB",
       f2: (t.f2.size / 1024).toFixed(0) + " KB",
       f3: (t.f3.size / 1024).toFixed(0) + " KB",
     }));
-    console.log("Tamaños de fotos:", sizes);
-    alert(
-      "Enviando reporte... (fotos por ítem en KB)\n" +
-        sizes.map((s) => `#${s.i} f1:${s.f1} f2:${s.f2} f3:${s.f3}`).join("\n")
-    );
+    console.log("Enviando reporte... tamaños por ítem (KB):", sizes);
 
+    // Subida de fotos
     const fotosB64 = await Promise.all(
       fotosMem.map(async (trio) => {
         const [b1, b2, b3] = await Promise.all([
@@ -408,7 +428,6 @@ $("#btnEnviar").addEventListener("click", async () => {
         return { foto1: b1, foto2: b2, foto3: b3 };
       })
     );
-    console.log({ fotosB64 });
 
     const registrosPayload = registros.map((r, i) => ({
       ...r,
@@ -448,10 +467,11 @@ $("#btnEnviar").addEventListener("click", async () => {
     registros = [];
     fotosMem = [];
 
-    alert("¡Reporte enviado con éxito!");
+    // Mantén overlay visible y navega a confirmación
     window.location.href = "confirmacion.html";
   } catch (err) {
     console.error(err);
+    showLoading(false); // quita overlay si falla
     alert("No se pudo enviar el reporte:\n" + (err.message || err));
   }
 });
@@ -473,7 +493,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // 👇 Inicializa la máscara visual del campo Lote
   initLoteMask();
 });
-
 
 // ====== MÁSCARA VISUAL SOLO PARA #lote ======
 // Template: L___ __:__ __ __

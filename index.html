@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -34,7 +35,6 @@
         <select id="operador" required>
           <option value="">Seleccione una opción</option>
           <option>Inlotrans</option>
-          
         </select>
       </div>
       <div class="field">
@@ -80,7 +80,6 @@
           <option>Bolsa - mal codificada</option>
           <option>Bolsa - mal sellada / Quemada</option>
           <option>Bolsa - insumo y materiales o defectuosos</option>
-         
         </select>
       </div>
       <div class="field">
@@ -133,6 +132,14 @@
     <!-- Acciones -->
     <div class="actions">
       <button id="btnEnviar" class="primary">Enviar reporte averías</button>
+    </div>
+  </div>
+
+  <!-- Overlay de Cargando -->
+  <div id="loadingOverlay" class="loading-overlay hidden" aria-live="polite" aria-busy="true">
+    <div class="loading-card">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Enviando reporte, por favor espera…</p>
     </div>
   </div>
 
