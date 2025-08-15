@@ -1,4 +1,3 @@
-// script.js
 // ====== CONFIG ======
 const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbw2J76HmM9sT9i-IH4IVPgzw782oUM9lP5q4KM_0_0oyryhhjIrX0T-KK2H6vHOQtob/exec";
@@ -69,6 +68,13 @@ function loadDraft() {
     console.warn("No se pudo cargar borrador:", e);
   }
 }
+
+// ===== Auto-guardado encabezado y antes de salir =====
+["fechaHora","turno","operador","funcionario"].forEach(id => {
+  document.getElementById(id)?.addEventListener("input", saveDraft);
+  document.getElementById(id)?.addEventListener("change", saveDraft);
+});
+window.addEventListener("beforeunload", saveDraft);
 
 // ===== Overlay loading =====
 function showLoading(on = true) {
@@ -264,6 +270,7 @@ $("#btnAdd").addEventListener("click", () => {
 
   renderRegistros();
   sumTotal();
+  saveDraft(); // <- guarda encabezado + registros tras agregar
 
   $("#itemForm").reset();
   $("#descripcion").value = "";
@@ -296,6 +303,7 @@ $("#averiasContainer").addEventListener("click", async (e) => {
     registros.splice(idx, 1);
     fotosMem.splice(idx, 1);
     renderRegistros();
+    saveDraft(); // <- guarda tras eliminar
     toast("Registro eliminado.");
     return;
   }
@@ -348,6 +356,7 @@ $("#averiasContainer").addEventListener("click", async (e) => {
 
     delete registros[idx]._edit;
     renderRegistros();
+    saveDraft(); // <- guarda tras editar
     toast("Registro actualizado.");
     return;
   }
@@ -382,7 +391,7 @@ async function subirFotoIndividual(foto) {
   }
 }
 
-// ====== SUBMIT (con overlay de carga) ======
+// ====== SUBMIT (con overlay de carga y validación de fotos) ======
 document.getElementById("btnEnviar").addEventListener("click", async () => {
   // Mostrar overlay desde el inicio
   showLoading(true);
@@ -406,6 +415,20 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
     if (faltan.length) {
       showLoading(false);
       return toast("Completa los datos del encabezado:\n- " + faltan.join("\n- "));
+    }
+
+    // Validar que todas las averías tengan sus 3 fotos
+    const faltanFotos = registros.reduce((arr, _, i) => {
+      const t = fotosMem[i] || {};
+      if (!t.f1 || !t.f2 || !t.f3) arr.push(i + 1);
+      return arr;
+    }, []);
+    if (faltanFotos.length) {
+      showLoading(false);
+      return toast(
+        "Faltan evidencias en los registros: #" + faltanFotos.join(", ") +
+        ". Edita cada uno y adjunta las 3 fotos."
+      );
     }
 
     // Log de tamaños en consola (sin alert modal)
@@ -489,6 +512,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   loadDraft();
   sumTotal();
+
+  // Si hay registros persistidos pero fotosMem está vacío/incompleto,
+  // crea "huecos" para que el índice coincida y luego los puedas adjuntar.
+  if (registros.length && fotosMem.length < registros.length) {
+    fotosMem = Array.from({ length: registros.length }, (_, i) => fotosMem[i] || {});
+  }
 
   // 👇 Inicializa la máscara visual del campo Lote
   initLoteMask();
