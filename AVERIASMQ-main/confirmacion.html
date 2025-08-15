@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirmación de Envío</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#f4f6f5;margin:0;display:flex;align-items:center;justify-content:center;height:100vh}
+    .card{background:#fff;max-width:560px;width:92%;padding:28px;border-radius:16px;box-shadow:0 10px 26px rgba(0,0,0,.08);text-align:center}
+    h1{color:#2e7d32;margin:0 0 8px}
+    .info{margin-top:10px;text-align:left}
+    .info p{margin:6px 0}
+    .btn{margin-top:18px;display:inline-block;padding:12px 18px;background:#28a745;color:#fff;border-radius:10px;text-decoration:none;font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>✅ ¡Reporte de averías enviado exitosamente!</h1>
+    <p>Estos son los datos del envío:</p>
+    <div class="info">
+      <p><strong>Fecha:</strong> <span id="fecha"></span></p>
+      <p><strong>Turno:</strong> <span id="turno"></span></p>
+      <p><strong>Operador MQ:</strong> <span id="operador"></span></p>
+      <p><strong>Funcionario:</strong> <span id="funcionario"></span></p>
+      <p><strong>Total unidades:</strong> <span id="total"></span></p>
+    </div>
+    <a class="btn" href="index.html">➕ Agregar otro reporte</a>
+  </div>
+  <script>
+    const data = JSON.parse(localStorage.getItem("formLastSent")||"{}");
+    document.querySelector("#fecha").textContent = data.fechaHora || "";
+    document.querySelector("#turno").textContent = data.turno || "";
+    document.querySelector("#operador").textContent = data.operador || "";
+    document.querySelector("#funcionario").textContent = data.funcionario || "";
+    document.querySelector("#total").textContent = data.total || "0";
+  </script>
+</body>
+</html>

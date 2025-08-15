@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inlotrans | Reporte de averías MQ</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container">
+    <!-- Encabezado -->
+    <header class="header">
+      <h1>Inlotrans | Reporte de averías MQ</h1>
+    </header>
+
+    <!-- Formulario encabezado -->
+    <h3 class="section-title">Encabezado del reporte</h3>
+    <form id="headerForm" class="grid2" novalidate>
+      <div class="field">
+        <label for="fechaHora">📅 Fecha y hora de reporte *</label>
+        <input type="datetime-local" id="fechaHora" required />
+      </div>
+      <div class="field">
+        <label for="turno">🕐 Turno *</label>
+        <select id="turno" required>
+          <option value="">Seleccione una opción</option>
+          <option>Turno 1</option>
+          <option>Turno 2</option>
+          <option>Turno 3</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="operador">🏭 Operador MQ *</label>
+        <select id="operador" required>
+          <option value="">Seleccione una opción</option>
+          <option>Inlotrans 4G</option>
+          <option>Inlotrans LM</option>
+          <option>Inlotrans MS</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="funcionario">🧍 Funcionario que reporta *</label>
+        <input type="text" id="funcionario" placeholder="# Cédula" required />
+      </div>
+    </form>
+
+    <!-- Formulario item -->
+    <h3 class="section-title">Agregar avería</h3>
+    <form id="itemForm" class="grid2" novalidate>
+      <div class="field">
+        <label for="ean">📌 EAN 13 Producto *</label>
+        <input type="text" id="ean" inputmode="numeric" maxlength="13"
+               placeholder="Escanee o escriba 13 dígitos"
+               required pattern="^[0-9]{13}$"/>
+        <small class="hint">Debe ser de 13 dígitos.</small>
+      </div>
+      <div class="field">
+        <label for="descripcion">🏷️ Descripción</label>
+        <input type="text" id="descripcion" placeholder="Se autocompleta por EAN si existe"/>
+      </div>
+      <div class="field">
+        <label for="fv">📆 Fecha vencimiento *</label>
+        <input type="date" id="fv" required />
+      </div>
+      <div class="field">
+        <label for="lote">🔎 # Lote *</label>
+        <input type="text" id="lote" placeholder="Ej: L127 23:33 DD AM" required />
+      </div>
+      <div class="field">
+        <label for="causal">⚠️ Causal de avería *</label>
+        <select id="causal" required>
+          <option value="">Seleccione una causal</option>
+          <option>Mal estado - Posición y corte</option>
+          <option>Mal estado - Sello débil</option>
+          <option>Bajo de aire</option>
+          <option>Bajo Peso</option>
+          <option>Sobrespeso</option>
+          <option>No conforme - Sin fecha</option>
+          <option>Producto estallado</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>📍 Procedencia avería *</label>
+        <div class="radio-row">
+          <label><input type="radio" name="proc" value="MQ Santo Domingo" checked/> MQ Santo Domingo</label>
+          <label><input type="radio" name="proc" value="3PD Santo Domingo"/> 3PD Santo Domingo</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="cantidad">🔢 Cantidad *</label>
+        <input type="number" id="cantidad" min="1" required />
+      </div>
+      <div class="field">
+        <label>📦 Unidad de medida *</label>
+        <div class="radio-row">
+          <label><input type="radio" name="unidad" value="Unidad" checked/> Unidad</label>
+          <label><input type="radio" name="unidad" value="Docena"/> Docena</label>
+          <label><input type="radio" name="unidad" value="Six"/> Six</label>
+          <label><input type="radio" name="unidad" value="Bag / Bolsa"/> Bag / Bolsa</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="foto1">📸 Evidencia foto 1 - Unidad *</label>
+        <input type="file" id="foto1" accept="image/*" capture="environment" required />
+      </div>
+      <div class="field">
+        <label for="foto2">📸 Evidencia foto 2 - Lote y fecha *</label>
+        <input type="file" id="foto2" accept="image/*" capture="environment" required />
+      </div>
+      <div class="field">
+        <label for="foto3">📸 Evidencia foto 3 - Conjunto *</label>
+        <input type="file" id="foto3" accept="image/*" capture="environment" required />
+      </div>
+      <div class="field full">
+        <button type="button" id="btnAdd">+ Agregar registro</button>
+      </div>
+    </form>
+
+    <!-- Lista de averías -->
+    <h3 class="section-title">Averías agregadas</h3>
+    <div id="averiasContainer" class="cards"></div>
+
+    <!-- Totales -->
+    <div class="totals">
+      <label for="total">Total de averías (unidades)</label>
+      <input type="number" id="total" value="0" readonly />
+    </div>
+
+    <!-- Acciones -->
+    <div class="actions">
+      <button id="btnEnviar" class="primary">Enviar reporte averías</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
