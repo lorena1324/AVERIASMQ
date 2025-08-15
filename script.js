@@ -8,6 +8,10 @@ const FOTOS_APPS_SCRIPT_URL =
 let registros = []; // items sin imágenes (persistibles)
 let fotosMem = []; // { f1, f2, f3 } por item (no persistibles)
 
+// ====== KEYS LOCALSTORAGE ======
+const ITEM_DRAFT_KEY = "averiasItemDraft";   // <- nuevo: borrador del formulario de ítem
+const FORM_DRAFT_KEY = "averiasDraft";       // existente
+
 // ====== HELPERS ======
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -44,13 +48,12 @@ function saveDraft() {
     },
     registros,
   };
-  localStorage.setItem("averiasDraft", JSON.stringify(draft));
+  localStorage.setItem(FORM_DRAFT_KEY, JSON.stringify(draft));
 }
 
 function loadDraft() {
-  const raw = localStorage.getItem("averiasDraft");
+  const raw = localStorage.getItem(FORM_DRAFT_KEY);
   if (!raw) return;
-  console.log("Cargando borrador", fotosMem);
   try {
     const draft = JSON.parse(raw);
     if (draft.header) {
@@ -82,7 +85,6 @@ function showLoading(on = true) {
   if (!ov) return;
   ov.classList.toggle("hidden", !on);
 
-  // feedback del UI
   document.body.style.cursor = on ? "wait" : "";
   if (on) {
     document.body.dataset.pe = document.body.style.pointerEvents || "";
@@ -104,7 +106,6 @@ function renderRegistros() {
     el.className = "averia-card";
 
     if (!enEdicion) {
-      // Vista normal
       el.innerHTML = `
         <div class="card-row"><b>#:</b> <span>${i + 1}</span></div>
         <div class="card-row"><b>EAN:</b> <span>${r.ean}</span></div>
@@ -121,7 +122,6 @@ function renderRegistros() {
         </div>
       `;
     } else {
-      // Modo edición (mini-form en tarjeta)
       el.innerHTML = `
         <form class="grid2" data-edit="${i}">
           <div class="field">
@@ -175,7 +175,6 @@ function renderRegistros() {
             </div>
           </div>
 
-          <!-- Reemplazar fotos (opcional). Si no seleccionas nuevas, se conservan. -->
           <div class="field">
             <label>📸 Reemplazar foto 1 (opcional)</label>
             <input type="file" name="foto1" accept="image/*" capture="environment" />
@@ -219,6 +218,52 @@ $("#ean")?.addEventListener("input", () => {
   }
 });
 
+// ====== DRAFT DEL FORMULARIO DE ÍTEM (nuevo) ======
+function saveItemDraft() {
+  const d = {
+    ean: $("#ean")?.value.trim() ?? "",
+    descripcion: $("#descripcion")?.value.trim() ?? "",
+    fv: $("#fv")?.value ?? "",
+    lote: $("#lote")?.value ?? "",
+    causal: $("#causal")?.value ?? "",
+    proc: (Array.from($$("input[name='proc']")).find(r => r.checked) || {}).value || "",
+    cantidad: $("#cantidad")?.value ?? "",
+    unidad: (Array.from($$("input[name='unidad']")).find(r => r.checked) || {}).value || "",
+  };
+  localStorage.setItem(ITEM_DRAFT_KEY, JSON.stringify(d));
+}
+
+function loadItemDraft() {
+  const raw = localStorage.getItem(ITEM_DRAFT_KEY);
+  if (!raw) return;
+  try {
+    const d = JSON.parse(raw);
+    if (d.ean != null) $("#ean").value = d.ean;
+    if (d.descripcion != null) $("#descripcion").value = d.descripcion;
+    if (d.fv != null) $("#fv").value = d.fv;
+    if (d.lote != null) $("#lote").value = d.lote;
+    if (d.causal) $("#causal").value = d.causal;
+    if (d.proc) $$("input[name='proc']").forEach(r => r.checked = (r.value === d.proc));
+    if (d.cantidad != null) $("#cantidad").value = d.cantidad;
+    if (d.unidad) $$("input[name='unidad']").forEach(r => r.checked = (r.value === d.unidad));
+  } catch {}
+}
+
+function clearItemDraft() {
+  localStorage.removeItem(ITEM_DRAFT_KEY);
+}
+
+// Escuchas para autoguardar mientras escribes
+["ean","descripcion","fv","lote","causal","cantidad"].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener("input", saveItemDraft);
+    el.addEventListener("change", saveItemDraft);
+  }
+});
+$$("input[name='proc']").forEach(r => r.addEventListener("change", saveItemDraft));
+$$("input[name='unidad']").forEach(r => r.addEventListener("change", saveItemDraft));
+
 // ====== ADD ITEM ======
 $("#btnAdd").addEventListener("click", () => {
   const ean = $("#ean").value.trim();
@@ -227,7 +272,7 @@ $("#btnAdd").addEventListener("click", () => {
   const fv = $("#fv").value;
   if (!fv) return toast("Ingresa la fecha de vencimiento.");
 
-  // 👉 Lote: usar máscara visual y limpiar antes de validar
+  // Lote con máscara (subrayados)
   const loteMasked = $("#lote").value;
   if (loteMasked.includes("_")) return toast("Completa el # Lote.");
   const lote = loteMasked.replace(/_/g, "").trim();
@@ -260,7 +305,7 @@ $("#btnAdd").addEventListener("click", () => {
     ean,
     descripcion,
     fv,
-    lote, // <- guardamos limpio, sin '_'
+    lote, // limpio
     causal,
     procedencia,
     cantidad,
@@ -270,13 +315,13 @@ $("#btnAdd").addEventListener("click", () => {
 
   renderRegistros();
   sumTotal();
-  saveDraft(); // <- guarda encabezado + registros tras agregar
+  saveDraft();      // guarda encabezado + registros
+  clearItemDraft(); // limpia borrador del formulario de ítem
 
   $("#itemForm").reset();
   $("#descripcion").value = "";
   $("#ean").focus();
-  // Restaurar máscara visual en #lote después del reset
-  initLoteMask(true);
+  initLoteMask(true); // restaura máscara visual
 });
 
 // ====== Acciones en tarjetas (Editar/Guardar/Cancelar/Eliminar) ======
@@ -303,7 +348,7 @@ $("#averiasContainer").addEventListener("click", async (e) => {
     registros.splice(idx, 1);
     fotosMem.splice(idx, 1);
     renderRegistros();
-    saveDraft(); // <- guarda tras eliminar
+    saveDraft();
     toast("Registro eliminado.");
     return;
   }
@@ -314,7 +359,7 @@ $("#averiasContainer").addEventListener("click", async (e) => {
 
     const ean = form.ean.value.trim();
     const fv = form.fv.value;
-    const lote = form.lote.value.trim(); // (en edición no usamos máscara)
+    const lote = form.lote.value.trim(); // en edición no usamos máscara
     const causal = form.causal.value;
     const cantidad = parseInt(form.cantidad.value || "0", 10);
     const unidad = form.querySelector('input[name="unidad"]:checked')?.value || "";
@@ -356,7 +401,7 @@ $("#averiasContainer").addEventListener("click", async (e) => {
 
     delete registros[idx]._edit;
     renderRegistros();
-    saveDraft(); // <- guarda tras editar
+    saveDraft();
     toast("Registro actualizado.");
     return;
   }
@@ -376,14 +421,11 @@ async function subirFotoIndividual(foto) {
       method: "POST",
       body: JSON.stringify(payload),
     });
-    console.log(response);
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
     const resultado = await response.json();
-    console.log(`Respuesta foto:`, resultado.downloadUrl);
-
     return resultado.downloadUrl;
   } catch (error) {
     console.error(`Error subiendo foto:`, error);
@@ -391,9 +433,8 @@ async function subirFotoIndividual(foto) {
   }
 }
 
-// ====== SUBMIT (con overlay de carga y validación de fotos) ======
+// ====== SUBMIT (overlay + validación de fotos) ======
 document.getElementById("btnEnviar").addEventListener("click", async () => {
-  // Mostrar overlay desde el inicio
   showLoading(true);
 
   try {
@@ -417,7 +458,7 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
       return toast("Completa los datos del encabezado:\n- " + faltan.join("\n- "));
     }
 
-    // Validar que todas las averías tengan sus 3 fotos
+    // Validar fotos por registro
     const faltanFotos = registros.reduce((arr, _, i) => {
       const t = fotosMem[i] || {};
       if (!t.f1 || !t.f2 || !t.f3) arr.push(i + 1);
@@ -430,15 +471,6 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
         ". Edita cada uno y adjunta las 3 fotos."
       );
     }
-
-    // Log de tamaños en consola (sin alert modal)
-    const sizes = fotosMem.map((t, i) => ({
-      i: i + 1,
-      f1: (t.f1.size / 1024).toFixed(0) + " KB",
-      f2: (t.f2.size / 1024).toFixed(0) + " KB",
-      f3: (t.f3.size / 1024).toFixed(0) + " KB",
-    }));
-    console.log("Enviando reporte... tamaños por ítem (KB):", sizes);
 
     // Subida de fotos
     const fotosB64 = await Promise.all(
@@ -486,20 +518,20 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
       "formLastSent",
       JSON.stringify({ fechaHora, turno, operador, funcionario, total })
     );
-    localStorage.removeItem("averiasDraft");
+    localStorage.removeItem(FORM_DRAFT_KEY);
+    clearItemDraft();
     registros = [];
     fotosMem = [];
 
-    // Mantén overlay visible y navega a confirmación
     window.location.href = "confirmacion.html";
   } catch (err) {
     console.error(err);
-    showLoading(false); // quita overlay si falla
+    showLoading(false);
     alert("No se pudo enviar el reporte:\n" + (err.message || err));
   }
 });
 
-// ====== On Load: set default datetime & restore draft ======
+// ====== On Load ======
 document.addEventListener("DOMContentLoaded", () => {
   const fh = document.getElementById("fechaHora");
   if (fh && !fh.value) {
@@ -510,22 +542,21 @@ document.addEventListener("DOMContentLoaded", () => {
     )}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
     fh.value = v;
   }
+
   loadDraft();
   sumTotal();
 
   // Si hay registros persistidos pero fotosMem está vacío/incompleto,
-  // crea "huecos" para que el índice coincida y luego los puedas adjuntar.
   if (registros.length && fotosMem.length < registros.length) {
     fotosMem = Array.from({ length: registros.length }, (_, i) => fotosMem[i] || {});
   }
 
-  // 👇 Inicializa la máscara visual del campo Lote
-  initLoteMask();
+  initLoteMask();   // máscara del campo Lote
+  loadItemDraft();  // <- restaura lo que estabas escribiendo en el formulario de ítem
 });
 
 // ====== MÁSCARA VISUAL SOLO PARA #lote ======
 // Template: L___ __:__ __ __
-//   L + 3 dígitos  + espacio + 2 dígitos + ":" + 2 dígitos + espacio + 2 letras + espacio + 2 letras
 function initLoteMask(reset = false) {
   const input = document.getElementById("lote");
   if (!input) return;
@@ -534,10 +565,7 @@ function initLoteMask(reset = false) {
   const SCHEMA = ["L","#","#","#"," ","#","#",":","#","#"," ","A","A"," ","A","A"]; // #=digito, A=letra
 
   function buildMasked(raw) {
-    // raw: solo alfanumérico (convertimos a mayúscula)
-    let chars = raw.toUpperCase().replace(/[^A-Z0-9]/g, "").split("");
-
-    // ignorar 'L' si viene tipeada; la ponemos fija
+    let chars = (raw || "").toUpperCase().replace(/[^A-Z0-9]/g, "").split("");
     if (chars[0] === "L") chars.shift();
 
     let out = "";
@@ -549,7 +577,6 @@ function initLoteMask(reset = false) {
         const c = chars.shift();
         if (slot === "#" && /\d/.test(c)) { placed = c; break; }
         if (slot === "A" && /[A-Z]/.test(c)) { placed = c; break; }
-        // si no coincide, lo descartamos y seguimos
       }
       out += placed;
     }
@@ -564,12 +591,10 @@ function initLoteMask(reset = false) {
     if (wasEnd) input.setSelectionRange(masked.length, masked.length);
   }
 
-  // set inicial
   if (reset || !input.value) input.value = TEMPLATE;
 
   input.addEventListener("focus", () => {
     if (!input.value || /^L_/.test(input.value)) input.value = TEMPLATE;
-    // situar el cursor al final
     requestAnimationFrame(() => input.setSelectionRange(input.value.length, input.value.length));
   });
 
@@ -580,7 +605,6 @@ function initLoteMask(reset = false) {
     input.value = buildMasked(text);
   });
 
-  // al perder foco, si quedó vacío real (solo guiones bajos) mantenemos la guía
   input.addEventListener("blur", () => {
     if (!input.value || !/[A-Z0-9]/i.test(input.value)) input.value = TEMPLATE;
   });
