@@ -9,8 +9,8 @@ let registros = []; // items sin imágenes (persistibles)
 let fotosMem = []; // { f1, f2, f3 } por item (no persistibles)
 
 // ====== KEYS LOCALSTORAGE ======
-const ITEM_DRAFT_KEY = "averiasItemDraft";   // <- nuevo: borrador del formulario de ítem
-const FORM_DRAFT_KEY = "averiasDraft";       // existente
+const ITEM_DRAFT_KEY = "averiasItemDraft";
+const FORM_DRAFT_KEY = "averiasDraft";
 
 // ====== HELPERS ======
 const $ = (sel) => document.querySelector(sel);
@@ -95,6 +95,70 @@ function showLoading(on = true) {
   }
 }
 
+/* ========= PREVIEWS DE FOTOS ========= */
+/* Crea una cajita de preview (img + nombre) después de un input[type=file] */
+function ensurePreviewBox(afterInput, idForBox) {
+  let box = afterInput.nextElementSibling;
+  if (!box || !box.classList.contains("photo-preview")) {
+    box = document.createElement("div");
+    box.className = "photo-preview";
+    box.id = idForBox;
+    box.style.marginTop = "6px";
+    box.style.display = "flex";
+    box.style.alignItems = "center";
+    box.style.gap = "8px";
+    box.innerHTML = `
+      <img alt="Vista previa" style="max-width:120px;max-height:90px;border-radius:8px;border:1px solid #d1d5db;display:none"/>
+      <span class="photo-name" style="font-size:12px;color:#555;"></span>
+    `;
+    afterInput.insertAdjacentElement("afterend", box);
+  }
+  return box;
+}
+
+/* Actualiza preview con el archivo actual del input */
+function updatePreviewFromInput(inputEl) {
+  const box = ensurePreviewBox(inputEl, `prev-${inputEl.id || inputEl.name || "file"}`);
+  const img = box.querySelector("img");
+  const name = box.querySelector(".photo-name");
+  const file = inputEl.files && inputEl.files[0];
+
+  if (file) {
+    const url = URL.createObjectURL(file);
+    img.src = url;
+    img.style.display = "inline-block";
+    name.textContent = file.name;
+    img.onload = () => URL.revokeObjectURL(url);
+  } else {
+    img.src = "";
+    img.style.display = "none";
+    name.textContent = "";
+  }
+}
+
+/* Previews en el formulario principal (foto1, foto2, foto3) */
+function setupFormFilePreviews() {
+  ["foto1", "foto2", "foto3"].forEach((id) => {
+    const input = document.getElementById(id);
+    if (!input) return;
+    ensurePreviewBox(input, `prev-${id}`);
+    input.addEventListener("change", () => updatePreviewFromInput(input));
+  });
+}
+
+/* Limpia previews del formulario principal (cuando reseteas el form) */
+function clearFormPreviews() {
+  ["foto1", "foto2", "foto3"].forEach((id) => {
+    const box = document.getElementById(`prev-${id}`);
+    if (box) {
+      const img = box.querySelector("img");
+      const name = box.querySelector(".photo-name");
+      if (img) { img.src = ""; img.style.display = "none"; }
+      if (name) name.textContent = "";
+    }
+  });
+}
+
 // ====== RENDER (con Editar/Eliminar/Guardar/Cancelar) ======
 function renderRegistros() {
   const cont = $("#averiasContainer");
@@ -106,6 +170,7 @@ function renderRegistros() {
     el.className = "averia-card";
 
     if (!enEdicion) {
+      // Vista normal
       el.innerHTML = `
         <div class="card-row"><b>#:</b> <span>${i + 1}</span></div>
         <div class="card-row"><b>EAN:</b> <span>${r.ean}</span></div>
@@ -116,12 +181,41 @@ function renderRegistros() {
         <div class="card-row"><b>Procedencia:</b> <span>${r.procedencia}</span></div>
         <div class="card-row"><b>Cantidad:</b> <span>${r.cantidad}</span></div>
         <div class="card-row"><b>Unidad:</b> <span>${r.unidad}</span></div>
-        <div class="card-row" style="grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px">
+        <div class="card-row" style="grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
           <button data-action="edit" data-idx="${i}">Editar</button>
           <button data-action="del"  data-idx="${i}">Eliminar</button>
         </div>
       `;
+
+      // 👉 Thumbs de fotos (si existen en memoria)
+      const trio = fotosMem[i] || {};
+      if (trio.f1 || trio.f2 || trio.f3) {
+        const row = document.createElement("div");
+        row.className = "card-row";
+        row.innerHTML = `<b>Fotos:</b>`;
+        const wrap = document.createElement("div");
+        wrap.style.display = "flex";
+        wrap.style.gap = "8px";
+        wrap.style.flexWrap = "wrap";
+
+        [trio.f1, trio.f2, trio.f3].forEach((f) => {
+          if (!f) return;
+          const img = document.createElement("img");
+          img.style.maxWidth = "110px";
+          img.style.maxHeight = "90px";
+          img.style.borderRadius = "8px";
+          img.style.border = "1px solid #d1d5db";
+          const url = URL.createObjectURL(f);
+          img.src = url;
+          img.onload = () => URL.revokeObjectURL(url);
+          wrap.appendChild(img);
+        });
+
+        row.appendChild(wrap);
+        el.appendChild(row);
+      }
     } else {
+      // Modo edición (mini-form en tarjeta)
       el.innerHTML = `
         <form class="grid2" data-edit="${i}">
           <div class="field">
@@ -175,6 +269,7 @@ function renderRegistros() {
             </div>
           </div>
 
+          <!-- Reemplazar fotos (opcional) -->
           <div class="field">
             <label>📸 Reemplazar foto 1 (opcional)</label>
             <input type="file" name="foto1" accept="image/*" capture="environment" />
@@ -218,7 +313,7 @@ $("#ean")?.addEventListener("input", () => {
   }
 });
 
-// ====== DRAFT DEL FORMULARIO DE ÍTEM (nuevo) ======
+// ====== DRAFT DEL FORMULARIO DE ÍTEM ======
 function saveItemDraft() {
   const d = {
     ean: $("#ean")?.value.trim() ?? "",
@@ -253,7 +348,7 @@ function clearItemDraft() {
   localStorage.removeItem(ITEM_DRAFT_KEY);
 }
 
-// Escuchas para autoguardar mientras escribes
+// Autoguardado mientras escribes
 ["ean","descripcion","fv","lote","causal","cantidad"].forEach(id => {
   const el = document.getElementById(id);
   if (el) {
@@ -315,13 +410,14 @@ $("#btnAdd").addEventListener("click", () => {
 
   renderRegistros();
   sumTotal();
-  saveDraft();      // guarda encabezado + registros
-  clearItemDraft(); // limpia borrador del formulario de ítem
+  saveDraft();
+  clearItemDraft();
 
   $("#itemForm").reset();
+  clearFormPreviews();  // 👈 limpia previews del formulario
   $("#descripcion").value = "";
   $("#ean").focus();
-  initLoteMask(true); // restaura máscara visual
+  initLoteMask(true);
 });
 
 // ====== Acciones en tarjetas (Editar/Guardar/Cancelar/Eliminar) ======
@@ -404,6 +500,14 @@ $("#averiasContainer").addEventListener("click", async (e) => {
     saveDraft();
     toast("Registro actualizado.");
     return;
+  }
+});
+
+/* 👉 Previews también cuando cambias archivos dentro de una tarjeta en modo edición */
+$("#averiasContainer").addEventListener("change", (e) => {
+  const input = e.target;
+  if (input && input.type === "file") {
+    updatePreviewFromInput(input);
   }
 });
 
@@ -546,13 +650,13 @@ document.addEventListener("DOMContentLoaded", () => {
   loadDraft();
   sumTotal();
 
-  // Si hay registros persistidos pero fotosMem está vacío/incompleto,
   if (registros.length && fotosMem.length < registros.length) {
     fotosMem = Array.from({ length: registros.length }, (_, i) => fotosMem[i] || {});
   }
 
-  initLoteMask();   // máscara del campo Lote
-  loadItemDraft();  // <- restaura lo que estabas escribiendo en el formulario de ítem
+  initLoteMask();     // máscara del campo Lote
+  loadItemDraft();    // restaura borrador del ítem
+  setupFormFilePreviews(); // 👈 activa previews en el formulario principal
 });
 
 // ====== MÁSCARA VISUAL SOLO PARA #lote ======
