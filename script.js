@@ -73,7 +73,7 @@ function loadDraft() {
 }
 
 // ===== Auto-guardado encabezado y antes de salir =====
-["fechaHora","turno","operador","funcionario"].forEach(id => {
+["fechaHora", "turno", "operador", "funcionario"].forEach(id => {
   document.getElementById(id)?.addEventListener("input", saveDraft);
   document.getElementById(id)?.addEventListener("change", saveDraft);
 });
@@ -263,13 +263,12 @@ function renderRegistros() {
           <div class="field">
             <label>📦 Unidad *</label>
             <div class="radio-row">
-              ${["Unidad","Docena","Six","Bag / Bolsa"].map(u =>
+              ${["Unidad", "Docena", "Six", "Bag / Bolsa"].map(u =>
                 `<label><input type="radio" name="unidad" value="${u}" ${u===r.unidad?"checked":""}/> ${u}</label>`
               ).join("")}
             </div>
           </div>
 
-          <!-- Reemplazar fotos (opcional) -->
           <div class="field">
             <label>📸 Reemplazar foto 1 (opcional)</label>
             <input type="file" name="foto1" accept="image/*" capture="environment" />
@@ -349,7 +348,7 @@ function clearItemDraft() {
 }
 
 // Autoguardado mientras escribes
-["ean","descripcion","fv","lote","causal","cantidad"].forEach(id => {
+["ean", "descripcion", "fv", "lote", "causal", "cantidad"].forEach(id => {
   const el = document.getElementById(id);
   if (el) {
     el.addEventListener("input", saveItemDraft);
@@ -414,7 +413,7 @@ $("#btnAdd").addEventListener("click", () => {
   clearItemDraft();
 
   $("#itemForm").reset();
-  clearFormPreviews();  // 👈 limpia previews del formulario
+  clearFormPreviews();    // 👈 limpia previews del formulario
   $("#descripcion").value = "";
   $("#ean").focus();
   initLoteMask(true);
@@ -588,10 +587,24 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
       })
     );
 
-    const registrosPayload = registros.map((r, i) => ({
-      ...r,
-      ...fotosB64[i],
-    }));
+    // ✅ CORRECCIÓN: Construir el objeto con las propiedades en el orden exacto
+    const registrosPayload = registros.map((r, i) => {
+      const fotosDelRegistro = fotosB64[i];
+      return {
+        ean: r.ean,
+        descripcion: r.descripcion,
+        fv: r.fv,
+        lote: r.lote,
+        causal: r.causal,
+        procedencia: r.procedencia,
+        cantidad: r.cantidad,
+        unidad: r.unidad,
+        foto1: fotosDelRegistro.foto1,
+        foto2: fotosDelRegistro.foto2,
+        foto3: fotosDelRegistro.foto3,
+      };
+    });
+
     const payload = {
       fechaHora,
       turno,
@@ -654,7 +667,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fotosMem = Array.from({ length: registros.length }, (_, i) => fotosMem[i] || {});
   }
 
-  initLoteMask();     // máscara del campo Lote
+  initLoteMask();    // máscara del campo Lote
   loadItemDraft();    // restaura borrador del ítem
   setupFormFilePreviews(); // 👈 activa previews en el formulario principal
 });
@@ -666,7 +679,7 @@ function initLoteMask(reset = false) {
   if (!input) return;
 
   const TEMPLATE = "L___ __:__ __ __";
-  const SCHEMA = ["L","#","#","#"," ","#","#",":","#","#"," ","A","A"," ","A","A"]; // #=digito, A=letra
+  const SCHEMA = ["L", "#", "#", "#", " ", "#", "#", ":", "#", "#", " ", "A", "A", " ", "A", "A"]; // #=digito, A=letra
 
   function buildMasked(raw) {
     let chars = (raw || "").toUpperCase().replace(/[^A-Z0-9]/g, "").split("");
