@@ -1,13 +1,12 @@
-// ====== CONFIG ====== 
-const APPS_SCRIPT_URL = 
-  "https://script.google.com/macros/s/AKfycbw2J76HmM9sT9i-IH4IVPgzw782oUM9lP5q4KM_0_0oyryhhjIrX0T-KK2H6vHOQtob/exec"; 
-const FOTOS_APPS_SCRIPT_URL = 
-  "https://script.google.com/macros/s/AKfycbxFTKwAQCOl8Zu3i5fjL3otvHoNXpA9UxKBOp1DJNHtoOqeKrO03bYAHUvf2QvlxSeb/exec"; 
-// (Corregido) Enviará los datos al Google Sheets
+// ====== CONFIG ======
+const APPS_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbw2J76HmM9sT9i-IH4IVPgzw782oUM9lP5q4KM_0_0oyryhhjIrX0T-KK2H6vHOQtob/exec";
+const FOTOS_APPS_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbxFTKwAQCOl8Zu3i5fjL3otvHoNXpA9UxKBOp1DJNHtoOqeKrO03bYAHUvf2QvlxSeb/exec";
 
-// ====== STATE ====== 
-let registros = []; // items sin imágenes (persistibles) 
-let fotosMem = []; // { f1, f2, f3 } por item (no persistibles) 
+// ====== STATE ======
+let registros = []; // items sin imágenes (persistibles)
+let fotosMem = []; // { f1, f2, f3 } por item (no persistibles)
 
 // ====== KEYS LOCALSTORAGE ======
 const ITEM_DRAFT_KEY = "averiasItemDraft";
@@ -512,37 +511,29 @@ $("#averiasContainer").addEventListener("change", (e) => {
   }
 });
 
-// ====== Subida de fotos individual (CORREGIDA) ======
+// ====== Subida de fotos individual ======
 async function subirFotoIndividual(foto) {
   try {
     const base64Data = await toBase64(foto);
     const payload = {
       fileName: foto.name,
-      fileData: base64Data,    // dataURL completa
+      fileData: base64Data,
       mimeType: foto.type,
     };
 
     const response = await fetch(FOTOS_APPS_SCRIPT_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" }, // enviar JSON al Apps Script
       body: JSON.stringify(payload),
     });
-
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
     const resultado = await response.json();
-    if (resultado && resultado.ok) {
-      // CORREGIDO: usar publicUrl devuelto por Apps Script
-      return resultado.publicUrl || resultado.viewUrl || "";
-    } else {
-      console.error("Error subiendo foto:", resultado && resultado.error);
-      return "";
-    }
+    return resultado.downloadUrl;
   } catch (error) {
     console.error(`Error subiendo foto:`, error);
-    return "";
+    return { success: false, error: error.message };
   }
 }
 
@@ -585,7 +576,7 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
       );
     }
 
-    // Subida de fotos -> obtener URLs públicas
+    // Subida de fotos
     const fotosB64 = await Promise.all(
       fotosMem.map(async (trio) => {
         const [b1, b2, b3] = await Promise.all([
@@ -593,7 +584,7 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
           subirFotoIndividual(trio.f2),
           subirFotoIndividual(trio.f3),
         ]);
-        return { foto1: b1 || "", foto2: b2 || "", foto3: b3 || "" };
+        return { foto1: b1, foto2: b2, foto3: b3 };
       })
     );
 
@@ -601,7 +592,6 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
       ...r,
       ...fotosB64[i],
     }));
-
     const payload = {
       fechaHora,
       turno,
@@ -610,14 +600,11 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
       registros: registrosPayload,
     };
 
-    console.log("Payload final:", payload);
-
     const res = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" }, // ✅ CORREGIDO
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload),
     });
-
     const txt = await res.text();
     console.log("Respuesta backend:", txt);
 
@@ -640,7 +627,6 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
     registros = [];
     fotosMem = [];
 
-    // opcional: showLoading(false); // si quieres ver el overlay solo durante el envío
     window.location.href = "confirmacion.html";
   } catch (err) {
     console.error(err);
