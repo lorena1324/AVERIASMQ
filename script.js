@@ -11,6 +11,8 @@ let fotosMem = []; // { f1, f2, f3 } por item (no persistibles)
 // ====== KEYS LOCALSTORAGE ======
 const ITEM_DRAFT_KEY = "averiasItemDraft";
 const FORM_DRAFT_KEY = "averiasDraft";
+const PHOTOS_CACHE_KEY = "averiasPhotosCache";
+const CACHE_TIMESTAMP_KEY = "averiasCacheTimestamp";
 
 // ====== HELPERS ======
 const $ = (sel) => document.querySelector(sel);
@@ -49,6 +51,13 @@ function saveDraft() {
     registros,
   };
   localStorage.setItem(FORM_DRAFT_KEY, JSON.stringify(draft));
+  localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+
+  // Guardar fotos en caché
+  savePhotosCache();
+
+  // Mostrar indicador de caché
+  showCacheIndicator();
 }
 
 function loadDraft() {
@@ -67,17 +76,129 @@ function loadDraft() {
       renderRegistros();
       sumTotal();
     }
+
+    // Cargar fotos desde caché
+    loadPhotosCache();
+
+    // Mostrar indicador si hay datos guardados
+    if (registros.length > 0) {
+      showCacheIndicator();
+    }
   } catch (e) {
     console.warn("No se pudo cargar borrador:", e);
   }
 }
 
+// ====== FUNCIONES DE CACHÉ DE FOTOS ======
+async function savePhotosCache() {
+  try {
+    const photosCache = [];
+
+    for (let i = 0; i < fotosMem.length; i++) {
+      const trio = fotosMem[i];
+      if (!trio) continue;
+
+      const trioBase64 = {};
+      if (trio.f1) trioBase64.f1 = await toBase64(trio.f1);
+      if (trio.f2) trioBase64.f2 = await toBase64(trio.f2);
+      if (trio.f3) trioBase64.f3 = await toBase64(trio.f3);
+
+      photosCache.push(trioBase64);
+    }
+
+    localStorage.setItem(PHOTOS_CACHE_KEY, JSON.stringify(photosCache));
+  } catch (error) {
+    console.warn("Error guardando fotos en caché:", error);
+  }
+}
+
+async function loadPhotosCache() {
+  try {
+    const raw = localStorage.getItem(PHOTOS_CACHE_KEY);
+    if (!raw) return;
+
+    const photosCache = JSON.parse(raw);
+    if (!Array.isArray(photosCache)) return;
+
+    // Restaurar fotos a la memoria
+    fotosMem = [];
+    for (let i = 0; i < photosCache.length; i++) {
+      const trioBase64 = photosCache[i];
+      const trio = {};
+
+      if (trioBase64.f1) {
+        const response = await fetch(trioBase64.f1);
+        const blob = await response.blob();
+        trio.f1 = new File([blob], `foto1_${i}.jpg`, { type: blob.type });
+      }
+      if (trioBase64.f2) {
+        const response = await fetch(trioBase64.f2);
+        const blob = await response.blob();
+        trio.f2 = new File([blob], `foto2_${i}.jpg`, { type: blob.type });
+      }
+      if (trioBase64.f3) {
+        const response = await fetch(trioBase64.f3);
+        const blob = await response.blob();
+        trio.f3 = new File([blob], `foto3_${i}.jpg`, { type: blob.type });
+      }
+
+      fotosMem.push(trio);
+    }
+
+    // Re-renderizar para mostrar las fotos
+    renderRegistros();
+  } catch (error) {
+    console.warn("Error cargando fotos desde caché:", error);
+  }
+}
+
+function clearPhotosCache() {
+  localStorage.removeItem(PHOTOS_CACHE_KEY);
+  localStorage.removeItem(CACHE_TIMESTAMP_KEY);
+}
+
+// ====== INDICADOR DE CACHÉ ======
+function showCacheIndicator() {
+  let indicator = document.getElementById("cacheIndicator");
+  if (!indicator) {
+    indicator = document.createElement("div");
+    indicator.id = "cacheIndicator";
+    indicator.style.cssText = `
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #4CAF50;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      z-index: 1000;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      display: none;
+    `;
+    indicator.innerHTML = "💾 Datos guardados automáticamente";
+    document.body.appendChild(indicator);
+  }
+
+  indicator.style.display = "block";
+  setTimeout(() => {
+    if (indicator) indicator.style.display = "none";
+  }, 3000);
+}
+
 // ===== Auto-guardado encabezado y antes de salir =====
-["fechaHora", "turno", "operador", "funcionario"].forEach(id => {
+["fechaHora", "turno", "operador", "funcionario"].forEach((id) => {
   document.getElementById(id)?.addEventListener("input", saveDraft);
   document.getElementById(id)?.addEventListener("change", saveDraft);
 });
 window.addEventListener("beforeunload", saveDraft);
+
+// ===== Auto-guardado cada 30 segundos =====
+setInterval(() => {
+  if (registros.length > 0 || fotosMem.length > 0) {
+    saveDraft();
+  }
+}, 30000);
 
 // ===== Overlay loading =====
 function showLoading(on = true) {
@@ -118,7 +239,10 @@ function ensurePreviewBox(afterInput, idForBox) {
 
 /* Actualiza preview con el archivo actual del input */
 function updatePreviewFromInput(inputEl) {
-  const box = ensurePreviewBox(inputEl, `prev-${inputEl.id || inputEl.name || "file"}`);
+  const box = ensurePreviewBox(
+    inputEl,
+    `prev-${inputEl.id || inputEl.name || "file"}`
+  );
   const img = box.querySelector("img");
   const name = box.querySelector(".photo-name");
   const file = inputEl.files && inputEl.files[0];
@@ -153,7 +277,10 @@ function clearFormPreviews() {
     if (box) {
       const img = box.querySelector("img");
       const name = box.querySelector(".photo-name");
-      if (img) { img.src = ""; img.style.display = "none"; }
+      if (img) {
+        img.src = "";
+        img.style.display = "none";
+      }
       if (name) name.textContent = "";
     }
   });
@@ -174,11 +301,15 @@ function renderRegistros() {
       el.innerHTML = `
         <div class="card-row"><b>#:</b> <span>${i + 1}</span></div>
         <div class="card-row"><b>EAN:</b> <span>${r.ean}</span></div>
-        <div class="card-row"><b>Descripción:</b> <span>${r.descripcion || ""}</span></div>
+        <div class="card-row"><b>Descripción:</b> <span>${
+          r.descripcion || ""
+        }</span></div>
         <div class="card-row"><b>FV:</b> <span>${r.fv}</span></div>
         <div class="card-row"><b>Lote:</b> <span>${r.lote}</span></div>
         <div class="card-row"><b>Causal:</b> <span>${r.causal}</span></div>
-        <div class="card-row"><b>Procedencia:</b> <span>${r.procedencia}</span></div>
+        <div class="card-row"><b>Procedencia:</b> <span>${
+          r.procedencia
+        }</span></div>
         <div class="card-row"><b>Cantidad:</b> <span>${r.cantidad}</span></div>
         <div class="card-row"><b>Unidad:</b> <span>${r.unidad}</span></div>
         <div class="card-row" style="grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
@@ -220,12 +351,16 @@ function renderRegistros() {
         <form class="grid2" data-edit="${i}">
           <div class="field">
             <label>📌 EAN 13 *</label>
-            <input type="text" name="ean" value="${r.ean}" inputmode="numeric" maxlength="13" required />
+            <input type="text" name="ean" value="${
+              r.ean
+            }" inputmode="numeric" maxlength="13" required />
             <small class="hint">Debe tener 13 dígitos.</small>
           </div>
           <div class="field">
             <label>🏷️ Descripción</label>
-            <input type="text" name="descripcion" value="${r.descripcion || ""}" />
+            <input type="text" name="descripcion" value="${
+              r.descripcion || ""
+            }" />
           </div>
           <div class="field">
             <label>📆 Fecha vencimiento *</label>
@@ -246,26 +381,42 @@ function renderRegistros() {
                 "Sobrespeso",
                 "No conforme - Sin fecha",
                 "Producto estallado",
-              ].map(c => `<option ${c===r.causal?"selected":""}>${c}</option>`).join("")}
+              ]
+                .map(
+                  (c) =>
+                    `<option ${c === r.causal ? "selected" : ""}>${c}</option>`
+                )
+                .join("")}
             </select>
           </div>
           <div class="field">
             <label>📍 Procedencia *</label>
             <div class="radio-row">
-              <label><input type="radio" name="proc" value="MQ Santo Domingo" ${r.procedencia==="MQ Santo Domingo"?"checked":""}/> MQ Santo Domingo</label>
-              <label><input type="radio" name="proc" value="3PD Santo Domingo" ${r.procedencia==="3PD Santo Domingo"?"checked":""}/> 3PD Santo Domingo</label>
+              <label><input type="radio" name="proc" value="MQ Santo Domingo" ${
+                r.procedencia === "MQ Santo Domingo" ? "checked" : ""
+              }/> MQ Santo Domingo</label>
+              <label><input type="radio" name="proc" value="3PD Santo Domingo" ${
+                r.procedencia === "3PD Santo Domingo" ? "checked" : ""
+              }/> 3PD Santo Domingo</label>
             </div>
           </div>
           <div class="field">
             <label>🔢 Cantidad *</label>
-            <input type="number" name="cantidad" min="1" value="${r.cantidad}" required />
+            <input type="number" name="cantidad" min="1" value="${
+              r.cantidad
+            }" required />
           </div>
           <div class="field">
             <label>📦 Unidad *</label>
             <div class="radio-row">
-              ${["Unidad", "Docena", "Six", "Bag / Bolsa"].map(u =>
-                `<label><input type="radio" name="unidad" value="${u}" ${u===r.unidad?"checked":""}/> ${u}</label>`
-              ).join("")}
+              ${["Unidad", "Docena", "Six", "Bag / Bolsa"]
+                .map(
+                  (u) =>
+                    `<label><input type="radio" name="unidad" value="${u}" ${
+                      u === r.unidad ? "checked" : ""
+                    }/> ${u}</label>`
+                )
+                .join("")}
             </div>
           </div>
 
@@ -301,7 +452,9 @@ function renderRegistros() {
 let EAN_DB = [];
 fetch("ean_db.json")
   .then((r) => r.json())
-  .then((db) => { EAN_DB = db || []; })
+  .then((db) => {
+    EAN_DB = db || [];
+  })
   .catch(() => {});
 
 $("#ean")?.addEventListener("input", () => {
@@ -320,9 +473,13 @@ function saveItemDraft() {
     fv: $("#fv")?.value ?? "",
     lote: $("#lote")?.value ?? "",
     causal: $("#causal")?.value ?? "",
-    proc: (Array.from($$("input[name='proc']")).find(r => r.checked) || {}).value || "",
+    proc:
+      (Array.from($$("input[name='proc']")).find((r) => r.checked) || {})
+        .value || "",
     cantidad: $("#cantidad")?.value ?? "",
-    unidad: (Array.from($$("input[name='unidad']")).find(r => r.checked) || {}).value || "",
+    unidad:
+      (Array.from($$("input[name='unidad']")).find((r) => r.checked) || {})
+        .value || "",
   };
   localStorage.setItem(ITEM_DRAFT_KEY, JSON.stringify(d));
 }
@@ -337,9 +494,13 @@ function loadItemDraft() {
     if (d.fv != null) $("#fv").value = d.fv;
     if (d.lote != null) $("#lote").value = d.lote;
     if (d.causal) $("#causal").value = d.causal;
-    if (d.proc) $$("input[name='proc']").forEach(r => r.checked = (r.value === d.proc));
+    if (d.proc)
+      $$("input[name='proc']").forEach((r) => (r.checked = r.value === d.proc));
     if (d.cantidad != null) $("#cantidad").value = d.cantidad;
-    if (d.unidad) $$("input[name='unidad']").forEach(r => r.checked = (r.value === d.unidad));
+    if (d.unidad)
+      $$("input[name='unidad']").forEach(
+        (r) => (r.checked = r.value === d.unidad)
+      );
   } catch {}
 }
 
@@ -348,15 +509,19 @@ function clearItemDraft() {
 }
 
 // Autoguardado mientras escribes
-["ean", "descripcion", "fv", "lote", "causal", "cantidad"].forEach(id => {
+["ean", "descripcion", "fv", "lote", "causal", "cantidad"].forEach((id) => {
   const el = document.getElementById(id);
   if (el) {
     el.addEventListener("input", saveItemDraft);
     el.addEventListener("change", saveItemDraft);
   }
 });
-$$("input[name='proc']").forEach(r => r.addEventListener("change", saveItemDraft));
-$$("input[name='unidad']").forEach(r => r.addEventListener("change", saveItemDraft));
+$$("input[name='proc']").forEach((r) =>
+  r.addEventListener("change", saveItemDraft)
+);
+$$("input[name='unidad']").forEach((r) =>
+  r.addEventListener("change", saveItemDraft)
+);
 
 // ====== ADD ITEM ======
 $("#btnAdd").addEventListener("click", () => {
@@ -413,7 +578,7 @@ $("#btnAdd").addEventListener("click", () => {
   clearItemDraft();
 
   $("#itemForm").reset();
-  clearFormPreviews();    // 👈 limpia previews del formulario
+  clearFormPreviews(); // 👈 limpia previews del formulario
   $("#descripcion").value = "";
   $("#ean").focus();
   initLoteMask(true);
@@ -457,8 +622,10 @@ $("#averiasContainer").addEventListener("click", async (e) => {
     const lote = form.lote.value.trim(); // en edición no usamos máscara
     const causal = form.causal.value;
     const cantidad = parseInt(form.cantidad.value || "0", 10);
-    const unidad = form.querySelector('input[name="unidad"]:checked')?.value || "";
-    const procedencia = form.querySelector('input[name="proc"]:checked')?.value || "";
+    const unidad =
+      form.querySelector('input[name="unidad"]:checked')?.value || "";
+    const procedencia =
+      form.querySelector('input[name="proc"]:checked')?.value || "";
     const descripcion = form.descripcion.value.trim();
 
     if (!/^\d{13}$/.test(ean)) return toast("El EAN debe tener 13 dígitos.");
@@ -558,7 +725,9 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
     if (!funcionario) faltan.push("Funcionario");
     if (faltan.length) {
       showLoading(false);
-      return toast("Completa los datos del encabezado:\n- " + faltan.join("\n- "));
+      return toast(
+        "Completa los datos del encabezado:\n- " + faltan.join("\n- ")
+      );
     }
 
     // Validar fotos por registro
@@ -570,8 +739,9 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
     if (faltanFotos.length) {
       showLoading(false);
       return toast(
-        "Faltan evidencias en los registros: #" + faltanFotos.join(", ") +
-        ". Edita cada uno y adjunta las 3 fotos."
+        "Faltan evidencias en los registros: #" +
+          faltanFotos.join(", ") +
+          ". Edita cada uno y adjunta las 3 fotos."
       );
     }
 
@@ -637,6 +807,7 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
     );
     localStorage.removeItem(FORM_DRAFT_KEY);
     clearItemDraft();
+    clearPhotosCache();
     registros = [];
     fotosMem = [];
 
@@ -647,6 +818,35 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
     alert("No se pudo enviar el reporte:\n" + (err.message || err));
   }
 });
+
+// ====== INFORMACIÓN DE CACHÉ ======
+function showCacheInfo() {
+  const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+  if (!timestamp) return;
+
+  const date = new Date(parseInt(timestamp));
+  const timeStr = date.toLocaleString("es-ES");
+
+  let info = document.getElementById("cacheInfo");
+  if (!info) {
+    info = document.createElement("div");
+    info.id = "cacheInfo";
+    info.style.cssText = `
+      background: #e3f2fd;
+      border: 1px solid #2196f3;
+      border-radius: 4px;
+      padding: 8px 12px;
+      margin: 10px 0;
+      font-size: 12px;
+      color: #1976d2;
+    `;
+    document
+      .querySelector(".container")
+      .insertBefore(info, document.querySelector(".section-title"));
+  }
+
+  info.innerHTML = `💾 Última vez guardado: ${timeStr}`;
+}
 
 // ====== On Load ======
 document.addEventListener("DOMContentLoaded", () => {
@@ -664,12 +864,18 @@ document.addEventListener("DOMContentLoaded", () => {
   sumTotal();
 
   if (registros.length && fotosMem.length < registros.length) {
-    fotosMem = Array.from({ length: registros.length }, (_, i) => fotosMem[i] || {});
+    fotosMem = Array.from(
+      { length: registros.length },
+      (_, i) => fotosMem[i] || {}
+    );
   }
 
-  initLoteMask();    // máscara del campo Lote
-  loadItemDraft();    // restaura borrador del ítem
+  initLoteMask(); // máscara del campo Lote
+  loadItemDraft(); // restaura borrador del ítem
   setupFormFilePreviews(); // 👈 activa previews en el formulario principal
+
+  // Mostrar información de caché si existe
+  showCacheInfo();
 });
 
 // ====== MÁSCARA VISUAL SOLO PARA #lote ======
@@ -679,21 +885,53 @@ function initLoteMask(reset = false) {
   if (!input) return;
 
   const TEMPLATE = "L___ __:__ __ __";
-  const SCHEMA = ["L", "#", "#", "#", " ", "#", "#", ":", "#", "#", " ", "A", "A", " ", "A", "A"]; // #=digito, A=letra
+  const SCHEMA = [
+    "L",
+    "#",
+    "#",
+    "#",
+    " ",
+    "#",
+    "#",
+    ":",
+    "#",
+    "#",
+    " ",
+    "A",
+    "A",
+    " ",
+    "A",
+    "A",
+  ]; // #=digito, A=letra
 
   function buildMasked(raw) {
-    let chars = (raw || "").toUpperCase().replace(/[^A-Z0-9]/g, "").split("");
+    let chars = (raw || "")
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .split("");
     if (chars[0] === "L") chars.shift();
 
     let out = "";
     for (const slot of SCHEMA) {
-      if (slot === "L") { out += "L"; continue; }
-      if (slot === " " || slot === ":") { out += slot; continue; }
+      if (slot === "L") {
+        out += "L";
+        continue;
+      }
+      if (slot === " " || slot === ":") {
+        out += slot;
+        continue;
+      }
       let placed = "_";
       while (chars.length) {
         const c = chars.shift();
-        if (slot === "#" && /\d/.test(c)) { placed = c; break; }
-        if (slot === "A" && /[A-Z]/.test(c)) { placed = c; break; }
+        if (slot === "#" && /\d/.test(c)) {
+          placed = c;
+          break;
+        }
+        if (slot === "A" && /[A-Z]/.test(c)) {
+          placed = c;
+          break;
+        }
       }
       out += placed;
     }
@@ -712,7 +950,9 @@ function initLoteMask(reset = false) {
 
   input.addEventListener("focus", () => {
     if (!input.value || /^L_/.test(input.value)) input.value = TEMPLATE;
-    requestAnimationFrame(() => input.setSelectionRange(input.value.length, input.value.length));
+    requestAnimationFrame(() =>
+      input.setSelectionRange(input.value.length, input.value.length)
+    );
   });
 
   input.addEventListener("input", handleInput);
