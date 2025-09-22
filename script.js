@@ -1,6 +1,6 @@
 // ====== CONFIG ======
 const APPS_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbw2J76HmM9sT9i-IH4IVPgzw782oUM9lP5q4KM_0_0oyryhhjIrX0T-KK2H6vHOQtob/exec";
+  "https://script.google.com/macros/s/AKfycbz_3ir7sARmd0RFMaINpq9G3ydvGptz0iPhTg2H0nkK4T2totS5fRZEIhQJorwuWuuS/exec";
 const FOTOS_APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbxFTKwAQCOl8Zu3i5fjL3otvHoNXpA9UxKBOp1DJNHtoOqeKrO03bYAHUvf2QvlxSeb/exec";
 
@@ -41,121 +41,324 @@ function sumTotal() {
 }
 
 function saveDraft() {
-  const draft = {
-    header: {
-      fechaHora: $("#fechaHora").value,
-      turno: $("#turno").value,
-      operador: $("#operador").value,
-      funcionario: $("#funcionario").value,
-    },
-    registros,
-  };
-  localStorage.setItem(FORM_DRAFT_KEY, JSON.stringify(draft));
-  localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+  try {
+    const draft = {
+      header: {
+        fechaHora: $("#fechaHora").value,
+        turno: $("#turno").value,
+        operador: $("#operador").value,
+        funcionario: $("#funcionario").value,
+      },
+      registros,
+    };
 
-  // Guardar fotos en caché
-  savePhotosCache();
+    localStorage.setItem(FORM_DRAFT_KEY, JSON.stringify(draft));
+    localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
 
-  // Mostrar indicador de caché
-  showCacheIndicator();
+    // Guardar fotos en caché de forma asíncrona
+    savePhotosCache()
+      .then(() => {
+        console.log("Borrador guardado exitosamente con fotos");
+      })
+      .catch((error) => {
+        console.error("Error guardando fotos en caché:", error);
+      });
+
+    // Mostrar indicador de caché
+    showCacheIndicator();
+  } catch (error) {
+    console.error("Error guardando borrador:", error);
+  }
 }
 
 function loadDraft() {
   const raw = localStorage.getItem(FORM_DRAFT_KEY);
-  if (!raw) return;
+  if (!raw) {
+    console.log("No hay borrador guardado");
+    return;
+  }
+
   try {
     const draft = JSON.parse(raw);
+
+    // Cargar datos del encabezado
     if (draft.header) {
       $("#fechaHora").value = draft.header.fechaHora || "";
       $("#turno").value = draft.header.turno || "";
       $("#operador").value = draft.header.operador || "";
       $("#funcionario").value = draft.header.funcionario || "";
     }
+
+    // Cargar registros
     if (Array.isArray(draft.registros)) {
       registros = draft.registros;
       renderRegistros();
       sumTotal();
     }
 
-    // Cargar fotos desde caché
-    loadPhotosCache();
-
-    // Mostrar indicador si hay datos guardados
-    if (registros.length > 0) {
-      showCacheIndicator();
-    }
+    // Cargar fotos desde caché de forma asíncrona
+    loadPhotosCache()
+      .then(() => {
+        console.log("Borrador cargado exitosamente con fotos");
+        // Mostrar indicador si hay datos guardados
+        if (registros.length > 0) {
+          showCacheIndicator();
+        }
+      })
+      .catch((error) => {
+        console.error("Error cargando fotos desde caché:", error);
+        // Aún mostrar indicador aunque las fotos fallen
+        if (registros.length > 0) {
+          showCacheIndicator();
+        }
+      });
   } catch (e) {
-    console.warn("No se pudo cargar borrador:", e);
+    console.error("Error parseando borrador:", e);
+    // Limpiar borrador corrupto
+    localStorage.removeItem(FORM_DRAFT_KEY);
   }
 }
 
 // ====== FUNCIONES DE CACHÉ DE FOTOS ======
 async function savePhotosCache() {
   try {
+    // Validar que hay fotos para guardar
+    if (!fotosMem || fotosMem.length === 0) {
+      console.log("No hay fotos en memoria para guardar en caché");
+      return;
+    }
+
     const photosCache = [];
+    let hasValidPhotos = false;
 
     for (let i = 0; i < fotosMem.length; i++) {
       const trio = fotosMem[i];
-      if (!trio) continue;
+      if (!trio) {
+        photosCache.push({});
+        continue;
+      }
 
       const trioBase64 = {};
-      if (trio.f1) trioBase64.f1 = await toBase64(trio.f1);
-      if (trio.f2) trioBase64.f2 = await toBase64(trio.f2);
-      if (trio.f3) trioBase64.f3 = await toBase64(trio.f3);
+      let trioHasPhotos = false;
+
+      // Procesar cada foto del trio con validación
+      for (const key of ["f1", "f2", "f3"]) {
+        if (trio[key] && trio[key] instanceof File) {
+          try {
+            trioBase64[key] = await toBase64(trio[key]);
+            trioHasPhotos = true;
+            hasValidPhotos = true;
+          } catch (error) {
+            console.warn(`Error convirtiendo ${key} a base64:`, error);
+            // Continuar con las otras fotos aunque una falle
+          }
+        }
+      }
 
       photosCache.push(trioBase64);
     }
 
-    localStorage.setItem(PHOTOS_CACHE_KEY, JSON.stringify(photosCache));
+    // Solo guardar si hay fotos válidas
+    if (hasValidPhotos) {
+      localStorage.setItem(PHOTOS_CACHE_KEY, JSON.stringify(photosCache));
+      console.log(`Guardadas ${photosCache.length} entradas de fotos en caché`);
+    } else {
+      console.log("No se encontraron fotos válidas para guardar en caché");
+    }
   } catch (error) {
-    console.warn("Error guardando fotos en caché:", error);
+    console.error("Error crítico guardando fotos en caché:", error);
   }
 }
 
 async function loadPhotosCache() {
   try {
     const raw = localStorage.getItem(PHOTOS_CACHE_KEY);
-    if (!raw) return;
+    if (!raw) {
+      console.log("No hay datos de fotos en caché");
+      return;
+    }
 
-    const photosCache = JSON.parse(raw);
-    if (!Array.isArray(photosCache)) return;
+    let photosCache;
+    try {
+      photosCache = JSON.parse(raw);
+    } catch (parseError) {
+      console.error("Error parseando datos de caché de fotos:", parseError);
+      // Limpiar caché corrupto
+      localStorage.removeItem(PHOTOS_CACHE_KEY);
+      return;
+    }
+
+    if (!Array.isArray(photosCache)) {
+      console.warn("Datos de caché de fotos no son un array válido");
+      return;
+    }
+
+    if (photosCache.length === 0) {
+      console.log("Caché de fotos está vacío");
+      return;
+    }
+
+    console.log(`Cargando ${photosCache.length} entradas de fotos desde caché`);
 
     // Restaurar fotos a la memoria
     fotosMem = [];
+    let loadedPhotos = 0;
+
     for (let i = 0; i < photosCache.length; i++) {
       const trioBase64 = photosCache[i];
-      const trio = {};
+      if (!trioBase64 || typeof trioBase64 !== "object") {
+        fotosMem.push({});
+        continue;
+      }
 
-      if (trioBase64.f1) {
-        const response = await fetch(trioBase64.f1);
-        const blob = await response.blob();
-        trio.f1 = new File([blob], `foto1_${i}.jpg`, { type: blob.type });
-      }
-      if (trioBase64.f2) {
-        const response = await fetch(trioBase64.f2);
-        const blob = await response.blob();
-        trio.f2 = new File([blob], `foto2_${i}.jpg`, { type: blob.type });
-      }
-      if (trioBase64.f3) {
-        const response = await fetch(trioBase64.f3);
-        const blob = await response.blob();
-        trio.f3 = new File([blob], `foto3_${i}.jpg`, { type: blob.type });
+      const trio = {};
+      let trioHasPhotos = false;
+
+      // Procesar cada foto del trio con validación
+      for (const key of ["f1", "f2", "f3"]) {
+        if (trioBase64[key] && typeof trioBase64[key] === "string") {
+          try {
+            // Validar que es un data URL válido
+            if (!trioBase64[key].startsWith("data:")) {
+              console.warn(`Data URL inválido para ${key} en índice ${i}`);
+              continue;
+            }
+
+            const response = await fetch(trioBase64[key]);
+            if (!response.ok) {
+              console.warn(
+                `Error fetch para ${key} en índice ${i}:`,
+                response.status
+              );
+              continue;
+            }
+
+            const blob = await response.blob();
+            if (blob.size === 0) {
+              console.warn(`Blob vacío para ${key} en índice ${i}`);
+              continue;
+            }
+
+            // Determinar el tipo MIME correcto
+            const mimeType = blob.type || "image/jpeg";
+            trio[key] = new File([blob], `${key}_${i}.jpg`, { type: mimeType });
+            trioHasPhotos = true;
+            loadedPhotos++;
+          } catch (error) {
+            console.warn(
+              `Error cargando ${key} desde caché en índice ${i}:`,
+              error
+            );
+            // Continuar con las otras fotos aunque una falle
+          }
+        }
       }
 
       fotosMem.push(trio);
     }
 
+    console.log(
+      `Cargadas ${loadedPhotos} fotos desde caché en ${fotosMem.length} registros`
+    );
+
     // Re-renderizar para mostrar las fotos
     renderRegistros();
   } catch (error) {
-    console.warn("Error cargando fotos desde caché:", error);
+    console.error("Error crítico cargando fotos desde caché:", error);
+    // Limpiar caché problemático
+    localStorage.removeItem(PHOTOS_CACHE_KEY);
   }
 }
 
 function clearPhotosCache() {
-  localStorage.removeItem(PHOTOS_CACHE_KEY);
-  localStorage.removeItem(CACHE_TIMESTAMP_KEY);
+  try {
+    localStorage.removeItem(PHOTOS_CACHE_KEY);
+    localStorage.removeItem(CACHE_TIMESTAMP_KEY);
+    console.log("Caché de fotos limpiado exitosamente");
+  } catch (error) {
+    console.error("Error limpiando caché de fotos:", error);
+  }
 }
+
+// ====== FUNCIONES DE DEBUGGING PARA CACHÉ ======
+function getCacheInfo() {
+  const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+  const photosCacheRaw = localStorage.getItem(PHOTOS_CACHE_KEY);
+
+  const info = {
+    hasTimestamp: !!timestamp,
+    timestamp: timestamp
+      ? new Date(parseInt(timestamp)).toLocaleString("es-ES")
+      : null,
+    hasPhotosCache: !!photosCacheRaw,
+    photosCacheSize: photosCacheRaw ? photosCacheRaw.length : 0,
+    fotosMemLength: fotosMem.length,
+    registrosLength: registros.length,
+  };
+
+  if (photosCacheRaw) {
+    try {
+      const photosCache = JSON.parse(photosCacheRaw);
+      info.photosCacheEntries = Array.isArray(photosCache)
+        ? photosCache.length
+        : 0;
+      info.isValidPhotosCache = Array.isArray(photosCache);
+    } catch (error) {
+      info.photosCacheParseError = error.message;
+    }
+  }
+
+  console.log("=== INFORMACIÓN DE CACHÉ ===", info);
+  return info;
+}
+
+function validateCacheIntegrity() {
+  console.log("=== VALIDACIÓN DE INTEGRIDAD DE CACHÉ ===");
+
+  const issues = [];
+
+  // Verificar que fotosMem y registros tengan la misma longitud
+  if (fotosMem.length !== registros.length) {
+    issues.push(
+      `Mismatch de longitud: fotosMem(${fotosMem.length}) vs registros(${registros.length})`
+    );
+  }
+
+  // Verificar que cada entrada en fotosMem tenga al menos un archivo válido
+  fotosMem.forEach((trio, index) => {
+    if (!trio || typeof trio !== "object") {
+      issues.push(`Entrada ${index}: trio inválido`);
+      return;
+    }
+
+    const hasValidFile = ["f1", "f2", "f3"].some(
+      (key) => trio[key] && trio[key] instanceof File
+    );
+
+    if (!hasValidFile) {
+      issues.push(`Entrada ${index}: no tiene archivos válidos`);
+    }
+  });
+
+  if (issues.length === 0) {
+    console.log("✅ Caché de fotos está íntegro");
+  } else {
+    console.warn("❌ Problemas encontrados en caché:", issues);
+  }
+
+  return issues;
+}
+
+// ====== EXPONER FUNCIONES DE DEBUGGING EN CONSOLA ======
+// Hacer disponibles las funciones de debugging en la consola del navegador
+window.debugCache = {
+  getInfo: getCacheInfo,
+  validateIntegrity: validateCacheIntegrity,
+  clearCache: clearPhotosCache,
+  saveCache: savePhotosCache,
+  loadCache: loadPhotosCache,
+  showInfo: showCacheInfo,
+};
 
 // ====== INDICADOR DE CACHÉ ======
 function showCacheIndicator() {
@@ -450,6 +653,9 @@ function renderRegistros() {
 
 // ====== EAN Autocomplete ======
 let EAN_DB = [];
+let EAN_COD_DB = [];
+
+// Cargar base de datos de EAN para descripciones
 fetch("ean_db.json")
   .then((r) => r.json())
   .then((db) => {
@@ -457,10 +663,31 @@ fetch("ean_db.json")
   })
   .catch(() => {});
 
+// Cargar base de datos de EAN para códigos
+fetch("ean-cod.json")
+  .then((r) => r.json())
+  .then((db) => {
+    EAN_COD_DB = db || [];
+  })
+  .catch(() => {});
+
+// Función para buscar código por EAN
+function buscarCodigoPorEAN(ean) {
+  const eanLimpio = ean.replace(/\D/g, "");
+  const encontrado = EAN_COD_DB.find((item) => {
+    const itemEan = String(item.ean || "");
+    return itemEan.replace(/\D/g, "") === eanLimpio;
+  });
+  return encontrado ? encontrado.codigo : null;
+}
+
 $("#ean")?.addEventListener("input", () => {
   const ean = $("#ean").value.trim().replace(/\D/g, "");
   if (ean.length === 13) {
-    const found = EAN_DB.find((x) => (x.ean || "").replace(/\D/g, "") === ean);
+    const found = EAN_DB.find((x) => {
+      const xEan = String(x.ean || "");
+      return xEan.replace(/\D/g, "") === ean;
+    });
     if (found) $("#descripcion").value = found.descripcion || "";
   }
 });
@@ -556,9 +783,15 @@ $("#btnAdd").addEventListener("click", () => {
   const f3 = $("#foto3").files[0];
   if (!f1 || !f2 || !f3) return toast("Debes adjuntar las 3 evidencias.");
 
-  const found = EAN_DB.find((x) => (x.ean || "").replace(/\D/g, "") === ean);
+  const found = EAN_DB.find((x) => {
+    const xEan = String(x.ean || "");
+    return xEan.replace(/\D/g, "") === ean;
+  });
   const descripcion =
     $("#descripcion").value || (found ? found.descripcion : "");
+
+  // Buscar código correspondiente al EAN
+  const codigo = buscarCodigoPorEAN(ean);
 
   registros.push({
     ean,
@@ -569,6 +802,7 @@ $("#btnAdd").addEventListener("click", () => {
     procedencia,
     cantidad,
     unidad,
+    codigo, // Agregar código encontrado
   });
   fotosMem.push({ f1, f2, f3 });
 
@@ -637,6 +871,9 @@ $("#averiasContainer").addEventListener("click", async (e) => {
     if (cantidad <= 0) return toast("Ingresa una cantidad válida.");
     if (!unidad) return toast("Selecciona la unidad.");
 
+    // Buscar código correspondiente al EAN
+    const codigo = buscarCodigoPorEAN(ean);
+
     // Reemplazo opcional de fotos
     const nf1 = form.foto1.files[0];
     const nf2 = form.foto2.files[0];
@@ -659,6 +896,7 @@ $("#averiasContainer").addEventListener("click", async (e) => {
       procedencia,
       cantidad,
       unidad,
+      codigo, // Agregar código encontrado
     };
 
     delete registros[idx]._edit;
@@ -762,6 +1000,7 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
       const fotosDelRegistro = fotosB64[i];
       return {
         ean: r.ean,
+        codigo: r.codigo, // Incluir código encontrado
         descripcion: r.descripcion,
         fv: r.fv,
         lote: r.lote,
@@ -863,7 +1102,11 @@ document.addEventListener("DOMContentLoaded", () => {
   loadDraft();
   sumTotal();
 
+  // Sincronizar fotosMem con registros si hay desfase
   if (registros.length && fotosMem.length < registros.length) {
+    console.log(
+      `Sincronizando fotosMem: ${fotosMem.length} -> ${registros.length}`
+    );
     fotosMem = Array.from(
       { length: registros.length },
       (_, i) => fotosMem[i] || {}
@@ -876,6 +1119,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Mostrar información de caché si existe
   showCacheInfo();
+
+  // Validar integridad del caché después de cargar todo
+  setTimeout(() => {
+    validateCacheIntegrity();
+    getCacheInfo();
+  }, 1000);
 });
 
 // ====== MÁSCARA VISUAL SOLO PARA #lote ======
