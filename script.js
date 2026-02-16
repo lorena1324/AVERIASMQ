@@ -1,4 +1,3 @@
-
 // ====== CONFIG ======
 const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbz74jKs06PkY5l881s7KeCb7K9fdwFBldRJK0PPBo0oOg4HXsRxhM1REJskpsMXxUcG/exec";
@@ -588,45 +587,41 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
       })
     );
 
-    // ✅ Construir el payload con el orden exacto requerido por la API
-    const payload = registros.map((r, i) => {
+    // ✅ CORRECCIÓN: Construir el objeto con las propiedades en el orden exacto
+    console.log("registros", JSON.stringify(registros));
+    const payload = registros.map(async (r, i) => {
       const fotosDelRegistro = fotosB64[i];
-      return [
-        fechaHora,                    // FECH-HRA
-        turno,                        // Turno
-        operador,                     // Operador
-        funcionario,                  // NC
-        r.ean,                        // CEAN
-        r.descripcion || "",          // Descripción
-        r.fv,                         // Fecha de vencimiento
-        r.lote,                       // Lote
-        r.causal,                     // Causal
-        r.procedencia,                // Procedencia
-        r.unidad || "",               // Unidad1
-        "",                           // Unidad2
-        r.cantidad,                   // Cantidad
-        fotosDelRegistro.foto1 || "", // Evidencias foto 1
-        fotosDelRegistro.foto2 || "", // Evidencias foto 2
-        fotosDelRegistro.foto3 || "", // Evidencias foto 3
-      ];
-    });
+      console.log("fotosDelRegistro", JSON.stringify(r));
+      const data = {
 
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload),
-    });
-    const txt = await res.text();
-    console.log("Respuesta backend:", txt);
+          "FECH-HRA": fechaHora,
+          "Turno": turno,
+          "Operador": operador,
+          "NC": funcionario,
+          "CEAN": r.ean,
+          "Descripción": r.descripcion || "",
+          "Fecha de vencimiento": r.fv,
+          "Lote": r.lote,
+          "Causal": r.causal,
+          "Procedencia": r.procedencia,
+          "Unidad1": r.unidad || "",
+          "Unidad2": r.unidad || "",
+          "Cantidad": r.cantidad,
+          "Evidencias foto 1": fotosDelRegistro.foto1 || "",
+          "Evidencias foto 2": fotosDelRegistro.foto2 || "",
+          "Evidencias foto 3": fotosDelRegistro.foto3 || ""
+        
+    };
 
-    let ok = res.ok;
-    try {
-      const j = JSON.parse(txt);
-      if (j.ok === true) ok = true;
-      else if (j.ok === false) throw new Error(j.error || "Backend ok:false");
-    } catch (_) {
-      if (!res.ok) throw new Error(txt || "Error HTTP");
-    }
+      console.log("data", data);
+      return await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(data),
+      });
+    });
+    const results = await Promise.all(payload);
+    console.log("results", results, JSON.stringify(results));
 
     const total = sumTotal();
     localStorage.setItem(
