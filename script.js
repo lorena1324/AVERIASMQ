@@ -1,6 +1,7 @@
+
 // ====== CONFIG ======
 const APPS_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbw2J76HmM9sT9i-IH4IVPgzw782oUM9lP5q4KM_0_0oyryhhjIrX0T-KK2H6vHOQtob/exec";
+  "https://script.google.com/macros/s/AKfycbz74jKs06PkY5l881s7KeCb7K9fdwFBldRJK0PPBo0oOg4HXsRxhM1REJskpsMXxUcG/exec";
 const FOTOS_APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbxFTKwAQCOl8Zu3i5fjL3otvHoNXpA9UxKBOp1DJNHtoOqeKrO03bYAHUvf2QvlxSeb/exec";
 
@@ -587,31 +588,28 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
       })
     );
 
-    // ✅ CORRECCIÓN: Construir el objeto con las propiedades en el orden exacto
-    const registrosPayload = registros.map((r, i) => {
+    // ✅ Construir el payload con el orden exacto requerido por la API
+    const payload = registros.map((r, i) => {
       const fotosDelRegistro = fotosB64[i];
-      return {
-        ean: r.ean,
-        descripcion: r.descripcion,
-        fv: r.fv,
-        lote: r.lote,
-        causal: r.causal,
-        procedencia: r.procedencia,
-        cantidad: r.cantidad,
-        unidad: r.unidad,
-        foto1: fotosDelRegistro.foto1,
-        foto2: fotosDelRegistro.foto2,
-        foto3: fotosDelRegistro.foto3,
-      };
+      return [
+        fechaHora,                    // FECH-HRA
+        turno,                        // Turno
+        operador,                     // Operador
+        funcionario,                  // NC
+        r.ean,                        // CEAN
+        r.descripcion || "",          // Descripción
+        r.fv,                         // Fecha de vencimiento
+        r.lote,                       // Lote
+        r.causal,                     // Causal
+        r.procedencia,                // Procedencia
+        r.unidad || "",               // Unidad1
+        "",                           // Unidad2
+        r.cantidad,                   // Cantidad
+        fotosDelRegistro.foto1 || "", // Evidencias foto 1
+        fotosDelRegistro.foto2 || "", // Evidencias foto 2
+        fotosDelRegistro.foto3 || "", // Evidencias foto 3
+      ];
     });
-
-    const payload = {
-      fechaHora,
-      turno,
-      operador,
-      funcionario,
-      registros: registrosPayload,
-    };
 
     const res = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
