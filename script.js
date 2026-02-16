@@ -604,9 +604,9 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
           "Lote": r.lote,
           "Causal": r.causal,
           "Procedencia": r.procedencia,
-          "Unidad1": r.unidad || "",
-          "Unidad2": r.unidad || "",
-          "Cantidad": r.cantidad,
+          "Unidad1": r.cantidad || "",
+          "Unidad2": r.cantidad || "",
+          "Cantidad": r.unidad,
           "Evidencias foto 1": fotosDelRegistro.foto1 || "",
           "Evidencias foto 2": fotosDelRegistro.foto2 || "",
           "Evidencias foto 3": fotosDelRegistro.foto3 || ""
