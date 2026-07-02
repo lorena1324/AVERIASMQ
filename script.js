@@ -306,7 +306,7 @@ fetch("ean_db.json")
 
 $("#ean")?.addEventListener("input", () => {
   const ean = $("#ean").value.trim().replace(/\D/g, "");
-  if (ean.length === 13) {
+  if (ean.length === 9 || ean.length === 13) {
     const found = EAN_DB.find((x) => (x.ean || "").replace(/\D/g, "") === ean);
     if (found) $("#descripcion").value = found.descripcion || "";
   }
@@ -361,7 +361,7 @@ $$("input[name='unidad']").forEach(r => r.addEventListener("change", saveItemDra
 // ====== ADD ITEM ======
 $("#btnAdd").addEventListener("click", () => {
   const ean = $("#ean").value.trim();
-  if (!/^\d{13}$/.test(ean)) return toast("El EAN debe tener 13 dígitos.");
+  if (!/^(\d{9}|\d{13})$/.test(ean)) return toast("El EAN debe tener 13 dígitos (o el código de 9).");
 
   const fv = $("#fv").value;
   if (!fv) return toast("Ingresa la fecha de vencimiento.");
@@ -461,7 +461,7 @@ $("#averiasContainer").addEventListener("click", async (e) => {
     const procedencia = form.querySelector('input[name="proc"]:checked')?.value || "";
     const descripcion = form.descripcion.value.trim();
 
-    if (!/^\d{13}$/.test(ean)) return toast("El EAN debe tener 13 dígitos.");
+    if (!/^(\d{9}|\d{13})$/.test(ean)) return toast("El EAN debe tener 13 dígitos (o el código de 9).");
     if (!fv) return toast("Ingresa la fecha de vencimiento.");
     if (!/^[A-Za-z0-9\s:.\-]{2,}$/i.test(lote))
       return toast("Formato de lote no válido. Ej: L127 23:33 DD AM");

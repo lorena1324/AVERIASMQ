@@ -1330,5 +1330,693 @@
   {
     "ean": "7702189227041",
     "descripcion": "SURTIDO QUAKER AVENA 752GX5X1 OFERTAX2"
+  },
+  {
+    "ean": "300033679",
+    "descripcion": "MARGARITA SURTIDO 600GX2X1 TER BX24X25G"
+  },
+  {
+    "ean": "300056037",
+    "descripcion": "MARGARITA NATURAL 25GX74X1 MAQ"
+  },
+  {
+    "ean": "300056038",
+    "descripcion": "MARGARITA POLLO 25GX74X1 MAQ"
+  },
+  {
+    "ean": "300056039",
+    "descripcion": "MARGARITA LIMON 25GX74X1 MAQ"
+  },
+  {
+    "ean": "400030952",
+    "descripcion": "CAJA GAP DOBLE ALTURA SABRITAS NEGRA"
+  },
+  {
+    "ean": "400040043",
+    "descripcion": "ETIQUETA MARCACION COLORES 100X60"
+  },
+  {
+    "ean": "400063610",
+    "descripcion": "BAG MGTA SURTIDA 25GX24X2 497X430 NA TR2"
+  },
+  {
+    "ean": "300034223",
+    "descripcion": "MARGARITA POLLO 4X1 BX12X25G+GTX2X25G"
+  },
+  {
+    "ean": "300033977",
+    "descripcion": "MARGARITA POLLO 25GX6X12 BX12 IMP"
+  },
+  {
+    "ean": "400030922",
+    "descripcion": "CINTA OFERTA FUCSIA 36MMX100MTS"
+  },
+  {
+    "ean": "400030959",
+    "descripcion": "BOLS TRANSP 235X400 POTINES"
+  },
+  {
+    "ean": "400030451",
+    "descripcion": "ETIQUETA BLANCA 40X40 COD BARRAS"
+  },
+  {
+    "ean": "300033970",
+    "descripcion": "DETODITO NATURAL 3X1 BX12X45G+GTX1X45G"
+  },
+  {
+    "ean": "300056022",
+    "descripcion": "DETODITO NATURAL 45GX6X12"
+  },
+  {
+    "ean": "300065338",
+    "descripcion": "DETODITO NATURAL 45GX60X1"
+  },
+  {
+    "ean": "400030623",
+    "descripcion": "CAJA MANZANA GOLD 500X333X330"
+  },
+  {
+    "ean": "300034111",
+    "descripcion": "DETODITO BBQ 3X1 BX12X45G+GTX1X45G"
+  },
+  {
+    "ean": "300055844",
+    "descripcion": "DETODITO BBQ 45GX6X12"
+  },
+  {
+    "ean": "300065339",
+    "descripcion": "DETODITO BBQ 45GX60X1"
+  },
+  {
+    "ean": "300034224",
+    "descripcion": "MARGARITA LIMON 4X1 BX12X25G+GTX2X25G"
+  },
+  {
+    "ean": "300033887",
+    "descripcion": "MARGARITA LIMON 25GX6X12 BX12 IMP"
+  },
+  {
+    "ean": "300033854",
+    "descripcion": "CHOCLITOS LIMON 6X1 BX12X27G+GTX2 MY"
+  },
+  {
+    "ean": "300057390",
+    "descripcion": "CHOCLITOS LIMON 27GX9X12 IMP"
+  },
+  {
+    "ean": "300056056",
+    "descripcion": "CHOCLITOS LIMON 27GX120X1 MAQ"
+  },
+  {
+    "ean": "400030954",
+    "descripcion": "CAJA MORADA GOLD 500X333X222"
+  },
+  {
+    "ean": "300033874",
+    "descripcion": "MARGARITA NATURAL 25GX6X12 BX12 IMP"
+  },
+  {
+    "ean": "400052372",
+    "descripcion": "CAJA E265 NARANJA"
+  },
+  {
+    "ean": "400059960",
+    "descripcion": "BAG MGTA NAT IMP 25GX12 HAN 400X395 LC2 (Docena)"
+  },
+  {
+    "ean": "400059955",
+    "descripcion": "BAG MGTA POLLO IMP 25X12 HAN 400X395 LC2 (Docena)"
+  },
+  {
+    "ean": "300058140",
+    "descripcion": "SURTIDO SUPER LONCHERA 271GX7X1 BX12"
+  },
+  {
+    "ean": "300033914",
+    "descripcion": "GUDIZ VAINILLA 28GX1X70"
+  },
+  {
+    "ean": "300063074",
+    "descripcion": "CHEETOS NATURAL 15GX86X1 MAQ"
+  },
+  {
+    "ean": "300057925",
+    "descripcion": "CHEETOS TRISSITOS PICANTE 20GX60X1"
+  },
+  {
+    "ean": "300058885",
+    "descripcion": "DORITOS MEGAQUESO 34GX80X1"
+  },
+  {
+    "ean": "400052672",
+    "descripcion": "CAJA E240 MORADA"
+  },
+  {
+    "ean": "400068849",
+    "descripcion": "BAG SUPER LONCHERA 271GX12 330X380 PCR"
+  },
+  {
+    "ean": "300058141",
+    "descripcion": "SURTIDO MEGA LONCHERA 586GX3X1 BX22"
+  },
+  {
+    "ean": "300056131",
+    "descripcion": "CHEESE TRIS QUESO 42GX96X1 SP"
+  },
+  {
+    "ean": "300058062",
+    "descripcion": "CHOCLITOS PICANTE 27GX120X1 MAQ"
+  },
+  {
+    "ean": "300062962",
+    "descripcion": "CHEETOS BOLIQUESO 20GX80X1 MAQ"
+  },
+  {
+    "ean": "400061457",
+    "descripcion": "BAG MEGA LONCHERA 586GX22X3 450X445 TR"
+  },
+  {
+    "ean": "300062681",
+    "descripcion": "SURTIDO ALEGRIA 338GX4X1"
+  },
+  {
+    "ean": "300063350",
+    "descripcion": "CHEESE TRIS 30GX96X1 MAQ"
+  },
+  {
+    "ean": "400043475",
+    "descripcion": "CAJA TROQUELADA"
+  },
+  {
+    "ean": "400068848",
+    "descripcion": "BAG LONCHERA D1 236GX10 330X360 PCR"
+  },
+  {
+    "ean": "300058236",
+    "descripcion": "SURTIDO ULTRA LONCHERA  1392GX2X1 BX50"
+  },
+  {
+    "ean": "300056028",
+    "descripcion": "NATUCHIPS PLATANO VERD 28GX10X12 IMP"
+  },
+  {
+    "ean": "300056030",
+    "descripcion": "NATUCHIPS PLATANO MADU 28GX10X12 IMP"
+  },
+  {
+    "ean": "400052671",
+    "descripcion": "CAJA E345 VERDE *SOLO PEDIR USADA*"
+  },
+  {
+    "ean": "400068847",
+    "descripcion": "BAG ULTRALONCHERA 1392GX50 610X510 PCR"
+  },
+  {
+    "ean": "400052673",
+    "descripcion": "CAJA E208 ROJA"
+  },
+  {
+    "ean": "400059910",
+    "descripcion": "BAG CHOCLITOS HANCO 27Gx12 315X320 LC2 (Docena)"
+  },
+  {
+    "ean": "300042478",
+    "descripcion": "DORITOS MQUESO 34GX6X1 BX10X34G IMP"
+  },
+  {
+    "ean": "300056040",
+    "descripcion": "DORITOS MEGAQUESO 34GX8X10 IMP"
+  },
+  {
+    "ean": "400000",
+    "descripcion": "CINTILLO QUE ENVIA COMERCIAL"
+  },
+  {
+    "ean": "400059914",
+    "descripcion": "BAG DOR QUESO IMP 34GX10 HAN 334X390 LC2"
+  },
+  {
+    "ean": "400058147",
+    "descripcion": "BAG IMP HANCO 400X395MM MGT 25 LIMON PR (Docena)"
+  },
+  {
+    "ean": "400062726",
+    "descripcion": "BAG DTD BBQ TRAN 45GX12 HAN 555X412 TR2"
+  },
+  {
+    "ean": "300056678",
+    "descripcion": "DETODITO BBQ 45GX6X6 BX6 IMP"
+  },
+  {
+    "ean": "400062723",
+    "descripcion": "BAG DTD BBQ IMP 45GX6 HAN 370X412 TR2"
+  },
+  {
+    "ean": "300055849",
+    "descripcion": "CHEETOS NATURAL 15GX8X12 BX12 IMP"
+  },
+  {
+    "ean": "400066229",
+    "descripcion": "BAG CHEETOS NAT 15GX12 HAN 420X345"
+  },
+  {
+    "ean": "300056054",
+    "descripcion": "CHEETOS BOLI QUESO 20GX6X12"
+  },
+  {
+    "ean": "400063428",
+    "descripcion": "BAG CHEETOS BOLIQUESO 20GX12 HAN 480X360"
+  },
+  {
+    "ean": "300033627",
+    "descripcion": "NATUCHIPS 4X1 BX12VER28G+BX12MAD28G PRSM"
+  },
+  {
+    "ean": "400030486",
+    "descripcion": "CINTA OFERTA BLANCA 36MMX100MTS"
+  },
+  {
+    "ean": "300061972",
+    "descripcion": "PROMO CHEETOSBO34G CHEETOSNT40G 108X6X1"
+  },
+  {
+    "ean": "300057168",
+    "descripcion": "CHEETOS BOLI 34GX30X1 RM"
+  },
+  {
+    "ean": "300059748",
+    "descripcion": "CHEETOS NATURAL 40GX40X1 CAJA"
+  },
+  {
+    "ean": "300061971",
+    "descripcion": "PROMO CHEETOSNT40G CHEETOSBO34G 114X6X1"
+  },
+  {
+    "ean": "400030625",
+    "descripcion": "CAJA ROJA GOLD 500X333X183"
+  },
+  {
+    "ean": "300061973",
+    "descripcion": "PROMO CHEESETRI80G CHEETOSNAT40G 200X6X1"
+  },
+  {
+    "ean": "300062893",
+    "descripcion": "CHEESE TRIS QUESO 80GX30X1 BH"
+  },
+  {
+    "ean": "300057010",
+    "descripcion": "DETODITO NATURAL 45GX6X6 BX6 IMP"
+  },
+  {
+    "ean": "400062724",
+    "descripcion": "BAG  DTD NAT IMP 45GX6 HAN 370X412 TR2"
+  },
+  {
+    "ean": "300062680",
+    "descripcion": "SURTIDO LONCHERA D1 236GX7X1"
+  },
+  {
+    "ean": "400068555",
+    "descripcion": "BAG LONCHERA D1 236GX10 330X360 PCR"
+  },
+  {
+    "ean": "300061015",
+    "descripcion": "MANI MOTO NAT 44GX9X12 DISPX12"
+  },
+  {
+    "ean": "300062630",
+    "descripcion": "MANIMOTO NATURAL 44GX108X1"
+  },
+  {
+    "ean": "400031061",
+    "descripcion": "STICKER SELLO SEGURIDAD"
+  },
+  {
+    "ean": "400059682",
+    "descripcion": "DISP MANI MOTO NAT 44GX12 RM"
+  },
+  {
+    "ean": "300062897",
+    "descripcion": "MULTIPACK EXTRUIDOS 130GX14X1 BX6"
+  },
+  {
+    "ean": "400068851",
+    "descripcion": "BAG EXTRUIDOS 130GX6 280X320 PCR"
+  },
+  {
+    "ean": "300062894",
+    "descripcion": "CHOCLITOS LIMON 210X19X1 BH"
+  },
+  {
+    "ean": "300057264",
+    "descripcion": "CHOCLITOS LIMON 210X19X1"
+  },
+  {
+    "ean": "400061915",
+    "descripcion": "BOX TROQUELADA E240 MORADA"
+  },
+  {
+    "ean": "300063095",
+    "descripcion": "MARGARITA POLLO 105GX18X1 BH"
+  },
+  {
+    "ean": "300056111",
+    "descripcion": "MARGARITA POLLO 105GX18X1"
+  },
+  {
+    "ean": "300063092",
+    "descripcion": "MARGARITA LIMON 105GX18X1 BH"
+  },
+  {
+    "ean": "300056113",
+    "descripcion": "MARGARITA LIMON 105GX18X1"
+  },
+  {
+    "ean": "300063058",
+    "descripcion": "DORITOS DINAM SURTIDO 240GX20X1 BX6 IMP"
+  },
+  {
+    "ean": "300062090",
+    "descripcion": "DORITOS DINAMITA FH 40GX110X1"
+  },
+  {
+    "ean": "300062009",
+    "descripcion": "DORITOS DINAMITA LIMON 40GX110X1"
+  },
+  {
+    "ean": "400062727",
+    "descripcion": "BAG DOR DINAM FH Y LIM 40GX6 220X315 TR2(x6)"
+  },
+  {
+    "ean": "300063057",
+    "descripcion": "MULTIPACK GUDIZ 224GX11X1 BX8"
+  },
+  {
+    "ean": "400066706",
+    "descripcion": "BAG GUDIZ 224G 400X290 NC"
+  },
+  {
+    "ean": "300063180",
+    "descripcion": "MULTIPACK PAPA 150X10X1 BX6"
+  },
+  {
+    "ean": "400063612",
+    "descripcion": "BAG MARGARITA 25GX6 390X285 NA TR2 (X6)"
+  },
+  {
+    "ean": "300063261",
+    "descripcion": "MULTIPACK PAPA 225X6X1 BX9"
+  },
+  {
+    "ean": "400063611",
+    "descripcion": "BAG MARGARITA 25GX9 330X360 NA TR2 (X9)"
+  },
+  {
+    "ean": "300063387",
+    "descripcion": "MULTIPACK PAPA 675GX2X1"
+  },
+  {
+    "ean": "300063571",
+    "descripcion": "DETODITOS PROMO CC ESP 330GX8X1"
+  },
+  {
+    "ean": "300063004",
+    "descripcion": "DETODITO NATURAL 165GX14X1"
+  },
+  {
+    "ean": "300056070",
+    "descripcion": "DETODITO MIX 165GX16X1"
+  },
+  {
+    "ean": "400062725",
+    "descripcion": "BAG DTD NAT TRAN 45GX12 HAN 555X412 TR2"
+  },
+  {
+    "ean": "300064165",
+    "descripcion": "PROMO CHEETOS 308GX5X1 PAGUE 10 LLEVE 14"
+  },
+  {
+    "ean": "4000",
+    "descripcion": "CINTILLO QUE ENVIA COMERCIAL"
+  },
+  {
+    "ean": "300064166",
+    "descripcion": "PROMO CHEETOS 248GX6X1 NAT15G 2BOLIQ34G"
+  },
+  {
+    "ean": "300064084",
+    "descripcion": "MULTIPACK PAPA 225X6X1 BX9 OFERTA 6X9"
+  },
+  {
+    "ean": "300048034",
+    "descripcion": "MARGARITA LIMON 105GX15X1"
+  },
+  {
+    "ean": "400063172",
+    "descripcion": "CAJA E240 TROQ AZUL OSC"
+  },
+  {
+    "ean": "300048142",
+    "descripcion": "MARGARITA POLLO 105GX15X1"
+  },
+  {
+    "ean": "300064252",
+    "descripcion": "CHOCLITOS LIMON 210GX15X1"
+  },
+  {
+    "ean": "300064891",
+    "descripcion": "Promo Doritos Megaqueso 408Gx12 Pague 10 lleve 14 (mayor)"
+  },
+  {
+    "ean": "300065231",
+    "descripcion": "MARGARITA LIMON 100GX18X1 MAQ"
+  },
+  {
+    "ean": "400065238",
+    "descripcion": "BOX TROQUELADA E240 MARGARITA"
+  },
+  {
+    "ean": "300065060",
+    "descripcion": "MARGARITA LIMON 100GX18X1"
+  },
+  {
+    "ean": "300065230",
+    "descripcion": "MARGARITA POLLO 100GX18X1 MAQ"
+  },
+  {
+    "ean": "300065061",
+    "descripcion": "MARGARITA POLLO 100GX18X1"
+  },
+  {
+    "ean": "300064890",
+    "descripcion": "Promo Doritos Megaqueso 408Gx12 Pague 10 lleve 12"
+  },
+  {
+    "ean": "300064937",
+    "descripcion": "MARGARITA LIMON 300GX6X1 BX12 PREC ESPEC"
+  },
+  {
+    "ean": "300064938",
+    "descripcion": "Margarita Pollo 25Gx6X12 Bx12 Imp Precio especial"
+  },
+  {
+    "ean": "300065472",
+    "descripcion": "CHOCLITOS LIMON 170GX19X1 MAQ"
+  },
+  {
+    "ean": "400065220",
+    "descripcion": "BOX TROQUELADA E240 CHOCLITOS"
+  },
+  {
+    "ean": "300065189",
+    "descripcion": "CHOCLITOS LIMON 170GX19X1"
+  },
+  {
+    "ean": "300065062",
+    "descripcion": "DETODITO BBQ PROMO 360GX4X1 PAGA6 LLEVE8"
+  },
+  {
+    "ean": "300065063",
+    "descripcion": "DETODITO LIMON PROM 360GX4X1 PAG6 LLEVE8"
+  },
+  {
+    "ean": "300056679",
+    "descripcion": "DETODITO LIMON 45GX6X6 IMP"
+  },
+  {
+    "ean": "300058040",
+    "descripcion": "DETODITO LIMON 45GX72X1"
+  },
+  {
+    "ean": "300064242",
+    "descripcion": "DORITOS DINAM LIMON TAQ 200GX27X1 MQ"
+  },
+  {
+    "ean": "400063171",
+    "descripcion": "CAJA E208 TROQ AZUL CELESTE"
+  },
+  {
+    "ean": "300057587",
+    "descripcion": "DORITOS DINAM LIMON TAQ 200GX27X1"
+  },
+  {
+    "ean": "300065585",
+    "descripcion": "NATUCHIPS PLATANO VER Y MAD 135GX16X1"
+  },
+  {
+    "ean": "300056029",
+    "descripcion": "NATUCHIPS PLATANO MADURO 135GX20X1"
+  },
+  {
+    "ean": "300056027",
+    "descripcion": "NATUCHIPS PLATANO VERDE 135GX20X1"
+  },
+  {
+    "ean": "300065959",
+    "descripcion": "MARGARITA MIXTA 100GX18X1"
+  },
+  {
+    "ean": "400068432",
+    "descripcion": "CS TROQ E240 MARGARITA MIXTA MUNDIAL"
+  },
+  {
+    "ean": "300066503",
+    "descripcion": "SURTIDO MEGA LONCHERA 586GX3X1 BX22"
+  },
+  {
+    "ean": "300066620",
+    "descripcion": "PROMO DORITOS 420GX8X1 5MQ43G5BBQ41G"
+  },
+  {
+    "ean": "400052373",
+    "descripcion": "CAJA E310"
+  },
+  {
+    "ean": "400068350",
+    "descripcion": "BAG DOR MIXTA IMP 420G 334X390"
+  },
+  {
+    "ean": "300065630",
+    "descripcion": "DORITOS BARBECUE 41GX72X1"
+  },
+  {
+    "ean": "300056063",
+    "descripcion": "DORITOS MEGAQUESO 43GX76X1"
+  },
+  {
+    "ean": "300066605",
+    "descripcion": "CHEETOS PROMO BOL PAGUE6LLEVE7 238GX4X1"
+  },
+  {
+    "ean": "300066603",
+    "descripcion": "OFERTA DOR CHE DTD BBQ MRGPOLLO 744GX3X1"
+  },
+  {
+    "ean": "300062903",
+    "descripcion": "DETODITO BBQ 165GX14X1"
+  },
+  {
+    "ean": "300056031",
+    "descripcion": "CHEETOS BOLI QUESO 160GX12X1"
+  },
+  {
+    "ean": "300056078",
+    "descripcion": "DORITOS MEGAQUESO 185GX18X1"
+  },
+  {
+    "ean": "300066602",
+    "descripcion": "OFERTA DOR CHE DTD LIM MRG LIM 744GX3X1"
+  },
+  {
+    "ean": "300056071",
+    "descripcion": "DETODITO LIMON 165GX16X1"
+  },
+  {
+    "ean": "300066506",
+    "descripcion": "MGTA POLLO PROMO PAGUE6LLEVE7 252GX10X1"
+  },
+  {
+    "ean": "300056564",
+    "descripcion": "MARGARITA POLLO 36GX70X1"
+  },
+  {
+    "ean": "300066507",
+    "descripcion": "MGTA LIMON PROMO PAGUE6LLEVE7 252GX10X1"
+  },
+  {
+    "ean": "300056642",
+    "descripcion": "MARGARITA LIMON 36GX70X1 RM"
+  },
+  {
+    "ean": "300066820",
+    "descripcion": "DORITOS MQ PROMO PAGUE6LLEVE7 301GX10X1"
+  },
+  {
+    "ean": "300066509",
+    "descripcion": "DTD BBQ PROMO PAGUE6 LLEVE7 350GX4X1"
+  },
+  {
+    "ean": "300057325",
+    "descripcion": "DETODITO BBQ 50GX33X1"
+  },
+  {
+    "ean": "300066508",
+    "descripcion": "DTD MIX PROMO PAGUE6 LLEVE7 350GX4X1"
+  },
+  {
+    "ean": "300057318",
+    "descripcion": "DETODITO MIX 50GX33X1 RM MF"
+  },
+  {
+    "ean": "300066970",
+    "descripcion": "MARGARITA OND PICANA 105GX15X1 TROQ"
+  },
+  {
+    "ean": "400068807",
+    "descripcion": "CS CAJA E240 TROQ AZUL OSC MUNDIAL"
+  },
+  {
+    "ean": "300066631",
+    "descripcion": "MARGARITA OND PICANA 105GX18X1"
+  },
+  {
+    "ean": "300066971",
+    "descripcion": "MARGARITA HOGAO 105GX15X1 TROQ"
+  },
+  {
+    "ean": "300066632",
+    "descripcion": "MARGARITA HOGAO 105GX18X1"
+  },
+  {
+    "ean": "300066644",
+    "descripcion": "MARGARITA SURTIDO 600GX3X1 TER BX24X25G"
+  },
+  {
+    "ean": "300066103",
+    "descripcion": "MARGARITA POLLO 5X1 BX12X25G+GTX2X25G"
+  },
+  {
+    "ean": "300066479",
+    "descripcion": "DETODITO NATURAL 4X1 BX12X45G+GTX1X45G"
+  },
+  {
+    "ean": "300066478",
+    "descripcion": "DETODITO BBQ 4X1 BX12X45G+GTX1X45G"
+  },
+  {
+    "ean": "300066749",
+    "descripcion": "MARGARITA LIMON 5X1 BX12X25G+GTX2X25G"
+  },
+  {
+    "ean": "300066477",
+    "descripcion": "CHOCLITOS LIMON 7X1 BX12X27G+GTX2 MY"
+  },
+  {
+    "ean": "300066770",
+    "descripcion": "SURTIDO MEGA LONCHERA 586GX4X1 BX22"
+  },
+  {
+    "ean": "400068850",
+    "descripcion": "BAG MEGA LONCHERA 586GX22 450X445 PCR"
   }
 ]
